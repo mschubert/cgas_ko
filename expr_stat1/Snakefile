@@ -1,0 +1,90 @@
+configfile: "../config.yaml"
+
+subworkflow stat_ko:
+    workdir: "../data/rnaseq_stat1"
+    snakefile: "../data/rnaseq_stat1/Snakefile"
+
+subworkflow sets:
+    workdir: "../data/genesets"
+    snakefile: "../data/genesets/Snakefile"
+
+subworkflow expr_diff:
+    workdir: "../expr_diff"
+    snakefile: "../expr_diff/Snakefile"
+
+rule all:
+    input:
+        expand("diff_expr/{sets}.pdf", sets=config['genesets']),
+        "aneup_ko_cor.pdf",
+        expand("aneup_ko_cor/{sets}.pdf", sets=config['genesets']),
+        "stat1ko_diff_inflamm_resp.pdf"#,
+#        "stat1_tf_activity.pdf"
+
+rule de_genes:
+    input:
+        rscript = "diff_expr.r",
+        dset = stat_ko("dset.rds")
+    output:
+        outfile = "diff_expr.rds",
+        plotfile = "diff_expr.pdf"
+    shell:
+        "Rscript {input.rscript}"
+            " --dset {input.dset}"
+            " --outfile {output.outfile}"
+            " --plotfile {output.plotfile}"
+
+rule de_sets:
+    input:
+        rscript = "diff_expr_sets.r",
+        diff_expr = "diff_expr.rds",
+        setfile = lambda wc: sets("human/{sets}.RData")
+    output:
+        plotfile = "diff_expr/{sets}.pdf"
+    shell:
+        "Rscript {input.rscript}"
+            " --diff_expr {input.diff_expr}"
+            " --setfile {input.setfile}"
+            " --plotfile {output.plotfile}"
+
+rule cor_genes:
+    input:
+        rscript = "aneup_ko_cor.r",
+        diff_expr = "diff_expr.rds",
+        diff_aneup = expr_diff("de_Mad2PB.RData")
+    output:
+        plotfile = "aneup_ko_cor.pdf"
+    shell:
+        "Rscript {input.rscript}"
+            " --diff_expr {input.diff_expr}"
+            " --diff_aneup {input.diff_aneup}"
+            " --plotfile {output.plotfile}"
+
+rule cor_sets:
+    input:
+        rscript = "aneup_ko_cor_sets.r",
+        diff_expr = "diff_expr.rds",
+        diff_aneup = expr_diff("de_Mad2PB.RData"),
+        set_human = lambda wc: sets("human/{sets}.RData"),
+        set_mouse = lambda wc: sets("mouse/{sets}.RData")
+    output:
+        plotfile = "aneup_ko_cor/{sets}.pdf"
+    shell:
+        "Rscript {input.rscript}"
+            " --diff_expr {input.diff_expr}"
+            " --diff_aneup {input.diff_aneup}"
+            " --set_human {input.set_human}"
+            " --set_mouse {input.set_mouse}"
+            " --plotfile {output.plotfile}"
+
+rule stat1ko_inflamm:
+    input:
+        rscript = "stat1ko_diff_inflamm_resp.r",
+        de_gene = "diff_expr.rds",
+        setfile = sets("human/CH.HALLMARK.RData")
+    output:
+        plotfile = "stat1ko_diff_inflamm_resp.pdf"
+    shell:
+        "Rscript {input.rscript}"
+            " --diff_expr {input.de_gene}"
+            " --setfile {input.setfile}"
+            " --plotfile {output.plotfile}"

@@ -1,0 +1,33 @@
+assembly: GRCh38
+paired_end: TRUE
+directory: seqdata/190909_NB501840_0229_AH37Y7BGXC/Pool_Petra_3
+
+samples:
+    wt_0_dmso-1: [ BT549_01_S8_R1_001.fastq.gz, BT549_01_S8_R2_001.fastq.gz ]
+    wt_24_dmso-1: [ BT549_02_S9_R1_001.fastq.gz, BT549_02_S9_R2_001.fastq.gz ]
+    wt_48_dmso-1: [ BT549_03_S10_R1_001.fastq.gz, BT549_03_S10_R2_001.fastq.gz ]
+    wt_24_rev-1: [ BT549_04_S11_1_001.fastq.gz, BT549_04_S11_R2_001.fastq.gz ]
+    wt_48_rev-1: [ BT549_05_S12_R1_001.fastq.gz, BT549_05_S12_R2_001.fastq.gz ]
+    stat1_0_dmso-1: [ BT549_06_S13_R1_001.fastq.gz, BT549_06_S13_R2_001.fastq.gz ]
+    stat1_24_dmso-1: [ BT549_07_S14_R1_001.fastq.gz, BT549_07_S14_R2_001.fastq.gz ]
+    stat1_48_dmso-1: [ BT549_08_S15_R1_001.fastq.gz, BT549_08_S15_R2_001.fastq.gz ]
+    stat1_24_rev-1: [ BT549_09_S16_R1_001.fastq.gz, BT549_09_S16_R2_001.fastq.gz ]
+    stat1_48_rev-1: [ BT549_10_S17_R1_001.fastq.gz, BT549_10_S17_R2_001.fastq.gz ]
+    cgas_0_dmso-1: [ BT549_11_S18_R1_001.fastq.gz, BT549_11_S18_R2_001.fastq.gz ]
+    cgas_24_dmso-1: [ BT549_12_S19_R1_001.fastq.gz, BT549_12_S19_R2_001.fastq.gz ]
+    cgas_24_rev-1: [ BT549_13_S20_R1_001.fastq.gz, BT549_13_S20_R2_001.fastq.gz ]
+    wt_2_ifng-1: [ BT549_14_S21_R1_001.fastq.gz, BT549_14_S21_R2_001.fastq.gz ]
+    wt_0_dmso-2: [ BT549_15_S22_R1_001.fastq.gz, BT549_15_S22_R2_001.fastq.gz ]
+    wt_24_dmso-2: [ BT549_16_S23_R1_001.fastq.gz, BT549_16_S23_R2_001.fastq.gz ]
+    wt_48_dmso-2: [ BT549_17_S24_R1_001.fastq.gz, BT549_17_S24_R2_001.fastq.gz ]
+    wt_24_rev-2: [ BT549_18_S25_R1_001.fastq.gz, BT549_18_S25_R2_001.fastq.gz ]
+    wt_48_rev-2: [ BT549_19_S26_R1_001.fastq.gz, BT549_19_S26_R2_001.fastq.gz ]
+    stat1_0_dmso-2: [ BT549_20_S27_R1_001.fastq.gz, BT549_20_S27_R2_001.fastq.gz ]
+    stat1_24_dmso-2: [ BT549_21_S28_R1_001.fastq.gz, BT549_21_S28_R2_001.fastq.gz ]
+    stat1_48_dmso-2: [ BT549_22_S29_R1_001.fastq.gz, BT549_22_S29_R2_001.fastq.gz ]
+    stat1_24_rev-2: [ BT549_23_S30_R1_001.fastq.gz, BT549_23_S30_R2_001.fastq.gz ]
+    stat1_48_rev-2: [ BT549_24_S31_R1_001.fastq.gz, BT549_24_S31_R2_001.fastq.gz ]
+    cgas_0_dmso-2: [ BT549_25_S32_R1_001.fastq.gz, BT549_25_S32_R2_001.fastq.gz ]
+    cgas_24_dmso-2: [ BT549_26_S33_R1_001.fastq.gz, BT549_26_S33_R2_001.fastq.gz ]
+    cgas_24_rev-2: [ BT549_27_S34_R1_001.fastq.gz, BT549_27_S34_R2_001.fastq.gz ]
+    wt_2_ifng-2: [ BT549_28_S35_R1_001.fastq.gz, BT549_28_S35_R2_001.fastq.gz ]

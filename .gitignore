@@ -14,7 +14,8 @@ data/**_info.yaml
 data/genome/*
 
 ### general
-*.xls[x]
+*.xls
+*.xlsx
 *.odt
 *#
 *.DS_Store

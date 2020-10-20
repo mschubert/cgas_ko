@@ -1,0 +1,38 @@
+configfile: "../../config.yaml"
+
+subworkflow mi_network:
+    workdir: "../networks"
+    snakefile: "../networks/Snakefile"
+
+enrichr_sets = set(config['genesets']) - set("MILE_regulons")
+org = ['human', 'mouse']
+
+rule all:
+    input:
+        expand("{org}/{geneset}.RData", org=org, geneset=enrichr_sets),
+        expand("{org}/MILE_regulons.RData", org=org)
+
+rule enrichr:
+    input:
+        rscript = "make_set.r"
+    output:
+        human = "human/{geneset}.RData",
+        mouse = "mouse/{geneset}.RData"
+    shell:
+        "Rscript {input.rscript}"
+            " --geneset {wildcards.geneset}"
+            " --human {output.human}"
+            " --mouse {output.mouse}"
+
+rule mi_regulons:
+    input:
+        rscript = "mi_regulons.r",
+        network = mi_network("E-GEOD-13159.RData")
+    output:
+        human = "human/MILE_regulons.RData",
+        mouse = "mouse/MILE_regulons.RData"
+    shell:
+        "Rscript {input.rscript}"
+            " --network {input.network}"
+            " --human {output.human}"
+            " --mouse {output.mouse}"
