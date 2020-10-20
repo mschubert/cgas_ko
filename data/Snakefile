@@ -1,0 +1,23 @@
+configfile: "../../config.yaml"
+
+#subworkflow sets:
+#    workdir: "../genesets"
+#    snakefile: "../genesets/Snakefile"
+
+rule all:
+    input:
+        "rnaseq.pdf"
+#        expand("sets/{sets}.pdf", sets=config['genesets'])
+
+rule rnaseq:
+    input:
+        rscript = "rnaseq.r",
+        samples = "rnaseq.tsv"
+    output:
+        outfile = "rnaseq.rds",
+        plotfile = "rnaseq.pdf"
+    shell:
+        "Rscript {input.rscript}"
+            " --samples {input.samples}"
+            " --outfile {output.outfile}"
+            " --plotfile {output.plotfile}"
