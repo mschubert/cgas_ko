@@ -25,15 +25,13 @@ sys$run({
         opt('p', 'plotfile', 'pdf', 'rnaseq.pdf')
     )
 
-    sept2019 = readr::read_tsv("rnaseq/count_matrix_known_barcodes_STL_and_USS_genes.txt")
-    oct2020 = readr::read_tsv("rnaseq/count_matrix_known_barcodes_STL_and_USS.txt.gz")
+    sept2019 = readr::read_tsv("rnaseq_new/count_matrix_known_barcodes_STL_and_USS_genes_2019.txt.gz")
+    oct2020 = readr::read_tsv("rnaseq_new/count_matrix_known_barcodes_STL_and_USS_genes_2020.txt.gz")
 
     batch1 = data.matrix(sept2019[-1])
     rownames(batch1) = sub("\\.[0-9]+$", "", sept2019$gene_id)
     batch2 = data.matrix(oct2020[-1])
-    rownames(batch2) = oct2020$transcript_id
-    batch2 = narray::map(batch2, along=1, sum, subsets=idmap$gene(
-        sub("\\.[0-9]+$", "", rownames(batch2)), from="ensembl_transcript_id", to="ensembl_gene_id"))
+    rownames(batch2) = sub("\\.[0-9]+$", "", oct2020$gene_id)
 
     # 18k genes unique to batch1, 9k unique to batch2, 21k common
     reads = na.omit(narray::stack(batch1, batch2, along=2))
