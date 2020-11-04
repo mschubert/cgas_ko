@@ -35,7 +35,11 @@ sys$run({
 
     # 18k genes unique to batch1, 9k unique to batch2, 21k common
     reads = na.omit(narray::stack(batch1, batch2, along=2))
-    samples = readr::read_tsv("rnaseq.tsv")
+    samples = readr::read_tsv("rnaseq.tsv") %>%
+        mutate(batch = factor(batch),
+               genotype = relevel(factor(genotype), "wt"),
+               treatment = relevel(factor(treatment), "dmso"))
+    narray::intersect(reads, samples$sample_id, along=2)
     eset = DESeq2::DESeqDataSetFromMatrix(reads, samples, ~1)
 
     p = plot_pca(eset)
