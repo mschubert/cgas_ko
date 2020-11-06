@@ -35,6 +35,7 @@ sys$run({
 
     # 18k genes unique to batch1, 9k unique to batch2, 21k common
     reads = na.omit(narray::stack(batch1, batch2, along=2))
+    reads = reads[rowSums(reads) > 0,]
     samples = readr::read_tsv("rnaseq.tsv") %>%
         mutate(batch = factor(batch),
                genotype = relevel(factor(genotype), "wt"),
