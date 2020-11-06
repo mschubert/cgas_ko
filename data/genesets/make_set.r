@@ -5,8 +5,8 @@ msdb = import('tools/msigdb')
 
 args = sys$cmd$parse(
     opt('g', 'geneset', 'Identifier of the gene set', 'KEA_2015'),
-    opt('h', 'human', 'save to RData', 'human/KEA_2015.RData'),
-    opt('m', 'mouse', 'save to RData', 'mouse/KEA_2015.RData'))
+    opt('h', 'human', 'save to RData', 'human/KEA_2015.rds'),
+    opt('m', 'mouse', 'save to RData', 'mouse/KEA_2015.rds'))
 
 if (args$geneset %in% enr$dbs()$name) {
     sets = enr$genes(args$geneset)
@@ -19,5 +19,5 @@ mouse = stack(sets)
 mouse$values = unname(idmap$orthologue(mouse$values, from="external_gene_name", to="mgi_symbol"))
 mouse = unstack(na.omit(mouse))
 
-save(sets, file=args$human)
-save(mouse, file=args$mouse)
+saveRDS(sets, file=args$human)
+saveRDS(mouse, file=args$mouse)
