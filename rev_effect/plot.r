@@ -13,6 +13,10 @@ volcano_or_compare = function(ref, cmp, col="genes", thresh=2.5, label_base=150,
     sym = list(x=rlang::sym(cmp), y=rlang::sym(ref), col=rlang::sym(col))
     refdf = res %>% filter(cond == ref) %>% pull(!! sym$col) %>% `[[`(1)
     cmpdf = res %>% filter(cond == cmp) %>% pull(!! sym$col) %>% `[[`(1)
+    if (! "stat" %in% colnames(refdf)) {
+        refdf = refdf %>% mutate(stat = statistic)
+        cmpdf = cmpdf %>% mutate(stat = statistic)
+    }
 
     avg_chr_label = mean(nchar(refdf$label), na.rm=TRUE)
     topf = function(dist, frac)
@@ -53,14 +57,31 @@ volcano_or_compare = function(ref, cmp, col="genes", thresh=2.5, label_base=150,
 }
 
 volcano = function(rname, col, hl=c()) {
-    res %>%
+    rdf = res %>%
         filter(cond == rname) %>%
         pull(!! rlang::sym(col)) %>%
         `[[`(1) %>%
-        mutate(size = log10(baseMean + 1),
-               circle = label %in% hl) %>%
-        plt$p_effect("padj", "log2FoldChange") %>%
-        plt$volcano(repel=TRUE) + ggtitle(rname)
+        mutate(circle = label %in% hl)
+
+    if ("baseMean" %in% colnames(rdf))
+        rdf %>%
+            mutate(size = log10(baseMean + 1)) %>%
+            plt$p_effect("padj", "log2FoldChange") %>%
+            plt$volcano(repel=TRUE) + ggtitle(rname)
+    else
+        rdf %>%
+            plt$p_effect("adj.p", "estimate") %>%
+            plt$volcano(repel=TRUE, text.size=2) + ggtitle(rname)
+}
+
+plot_matrix = function(res, col="genes") {
+    cmp = tidyr::crossing(tibble(ref = res$cond),
+                          tibble(cmp = res$cond)) %>%
+        rowwise() %>%
+            mutate(plot = list(volcano_or_compare(ref, cmp, col))) %>%
+        ungroup()
+
+    wrap_plots(cmp$plot, ncol=nrow(res), guides="collect")
 }
 
 args = sys$cmd$parse(
@@ -69,15 +90,9 @@ args = sys$cmd$parse(
 )
 
 res = readRDS(args$infile)
-
-cmp = tidyr::crossing(tibble(ref = res$cond),
-                      tibble(cmp = res$cond)) %>%
-    rowwise() %>%
-        mutate(plot = list(volcano_or_compare(ref, cmp, "genes"))) %>%
-    ungroup()
-
-plots = wrap_plots(cmp$plot, ncol=nrow(res), guides="collect")
+plots = sapply(colnames(res)[-1], plot_matrix, res=res, simplify=FALSE)
 
 pdf("rev_effect.pdf", 50, 50)
-print(plots)
+for (p in plots)
+    print(p)
 dev.off()
