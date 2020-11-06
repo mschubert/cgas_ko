@@ -95,7 +95,7 @@ sys$run({
     res = readRDS(args$infile)
     plots = sapply(colnames(res)[-1], plot_matrix, res=res, simplify=FALSE)
 
-    pdf("rev_effect.pdf", 50, 50)
+    pdf(args$plotfile, 50, 50)
     for (p in plots)
         print(p)
     dev.off()
