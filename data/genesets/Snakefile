@@ -10,8 +10,8 @@ rule enrichr:
     input:
         rscript = "make_set.r"
     output:
-        human = "human/{geneset}.RData",
-        mouse = "mouse/{geneset}.RData"
+        human = "human/{geneset}.rds",
+        mouse = "mouse/{geneset}.rds"
     shell:
         "Rscript {input.rscript}"
             " --geneset {wildcards.geneset}"

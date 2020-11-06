@@ -1,0 +1,37 @@
+configfile: "../config.yaml"
+
+subworkflow data:
+    workdir: "../data"
+    snakefile : "../data/Snakefile"
+
+subworkflow genesets:
+    workdir: "../data/genesets"
+    snakefile : "../data/genesets/Snakefile"
+
+rule all:
+    input:
+        "rev_effet.pdf"
+
+rule deseq:
+    input:
+        rscript = "deseq.r",
+        eset = data("rnaseq.rds"),
+        setfiles = genesets(expand("human/{set}.rds", set=config["genesets"]))
+    output:
+        outfile = "deseq.rds"
+    shell:
+        "Rscript {input.rscript}"
+            " --eset {input.eset}"
+            " --outfile {output.outfile}"
+            " {input.setfiles}"
+
+rule plot:
+    input:
+        rscript = "plot.r",
+        infile = "deseq.rds"
+    output:
+        plotfile = "rev_effet.pdf"
+    shell:
+        "Rscript {input.rscript}"
+            " --infile {input.infile}"
+            " --plotfile {output.plotfile}"
