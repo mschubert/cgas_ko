@@ -6,7 +6,7 @@ sys = import('sys')
 plt = import('plot')
 util = import('./util')
 
-volcano_or_compare = function(ref, cmp, col="genes", thresh=2.5, label_base=150, hl=c(), hollow=c()) {
+volcano_or_compare = function(ref, cmp, col="genes", thresh=2.5, label_base=200, hl=c(), hollow=c()) {
     if (ref == cmp)
         return(volcano(ref, col, hl))
 
@@ -71,7 +71,7 @@ volcano = function(rname, col, hl=c()) {
     else
         rdf %>%
             plt$p_effect("adj.p", "estimate") %>%
-            plt$volcano(repel=TRUE, text.size=2) + ggtitle(rname)
+            plt$volcano(repel=TRUE, base.size=0.1, text.size=2.5) + ggtitle(rname)
 }
 
 plot_matrix = function(res, col="genes") {
@@ -81,18 +81,22 @@ plot_matrix = function(res, col="genes") {
             mutate(plot = list(volcano_or_compare(ref, cmp, col))) %>%
         ungroup()
 
-    wrap_plots(cmp$plot, ncol=nrow(res), guides="collect")
+    plt$text(col, size=12) /
+        wrap_plots(cmp$plot, ncol=nrow(res), guides="collect") +
+        plot_layout(heights=c(1,100))
 }
 
-args = sys$cmd$parse(
-    opt('i', 'infile', 'rds', 'deseq.rds'),
-    opt('p', 'plotfile', 'pdf', 'rev_effect.pdf')
-)
+sys$run({
+    args = sys$cmd$parse(
+        opt('i', 'infile', 'rds', 'deseq.rds'),
+        opt('p', 'plotfile', 'pdf', 'rev_effect.pdf')
+    )
 
-res = readRDS(args$infile)
-plots = sapply(colnames(res)[-1], plot_matrix, res=res, simplify=FALSE)
+    res = readRDS(args$infile)
+    plots = sapply(colnames(res)[-1], plot_matrix, res=res, simplify=FALSE)
 
-pdf("rev_effect.pdf", 50, 50)
-for (p in plots)
-    print(p)
-dev.off()
+    pdf("rev_effect.pdf", 50, 50)
+    for (p in plots)
+        print(p)
+    dev.off()
+})

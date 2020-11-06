@@ -1,13 +1,13 @@
 genesets:
     - GO_Biological_Process_2018
+    - CH.HALLMARK
     - ENCODE_and_ChEA_Consensus_TFs_from_ChIP-X
     - Reactome_2016
     - KEGG_2016
-    - miRTarBase_2017
     - MSigDB_Oncogenic_Signatures
-    - CH.HALLMARK
     - CORUM
     - HMDB_Metabolites
+    - miRTarBase_2017
 
 # these are yaml files in expr_sets/* listing which genes, sets, viper TFs,
 # etc to highlight via expr_cor/{diffcor,genenet}
