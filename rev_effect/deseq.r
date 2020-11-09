@@ -19,8 +19,10 @@ sets = sapply(args$setfiles, readRDS)
 names(sets) = basename(tools::file_path_sans_ext(names(sets)))
 
 eset = readRDS(args$eset)
-eset = eset[,! colData(eset)$treatment %in% c("none", "ifna", "ifna") &
-               colData(eset)$time == 24]
+eset = eset[,(! colData(eset)$treatment %in% c("none", "ifna", "ifng") &
+                colData(eset)$time == 24) |
+              colData(eset)$genotype == "cgas" & colData(eset)$treatment == "none"] # fake DMSO rep
+colData(eset)$treatment = sub("none", "dmso", colData(eset)$treatment)
 colData(eset)$cond = sub("\\+?(rev|dmso)", "",
                          paste(colData(eset)$genotype, colData(eset)$treatment, sep="+"))
 colData(eset)$cond = relevel(factor(colData(eset)$cond), "wt")
