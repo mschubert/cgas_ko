@@ -6,7 +6,7 @@ sys = import('sys')
 plt = import('plot')
 util = import('./util')
 
-volcano_or_compare = function(ref, cmp, col="genes", thresh=2.5, label_base=200, hl=c(), hollow=c()) {
+volcano_or_compare = function(ref, cmp, col="genes", thresh=2, label_base=200, hl=c(), hollow=c()) {
     if (ref == cmp)
         return(volcano(ref, col, hl))
 
@@ -93,9 +93,10 @@ sys$run({
     )
 
     res = readRDS(args$infile)
+    res$cond = make.names(res$cond)
     plots = sapply(colnames(res)[-1], plot_matrix, res=res, simplify=FALSE)
 
-    pdf(args$plotfile, 55, 55)
+    pdf(args$plotfile, 70, 70)
     for (p in plots)
         print(p)
     dev.off()
