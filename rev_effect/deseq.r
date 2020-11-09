@@ -13,7 +13,8 @@ sets = sapply(args$setfiles, readRDS)
 names(sets) = basename(tools::file_path_sans_ext(names(sets)))
 
 eset = readRDS(args$eset)
-colData(eset)$cond = ifelse(grepl("il6", colData(eset)$treatment), "wt+il6",
+colData(eset)$cond = ifelse(grepl("il6", colData(eset)$treatment),
+                            paste0(as.character(colData(eset)$genotype), "+il6"),
                             as.character(colData(eset)$genotype))
 colData(eset)$cond = relevel(factor(colData(eset)$cond), "wt")
 colData(eset)$rev = ifelse(grepl("rev", colData(eset)$treatment), 1, 0)
