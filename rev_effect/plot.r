@@ -10,7 +10,7 @@ volcano_or_compare = function(ref, cmp, col="genes", thresh=2.5, label_base=200,
     if (ref == cmp)
         return(volcano(ref, col, hl))
 
-    sym = list(x=rlang::sym(cmp), y=rlang::sym(ref), col=rlang::sym(col))
+    sym = list(x=rlang::sym(ref), y=rlang::sym(cmp), col=rlang::sym(col))
     refdf = res %>% filter(cond == ref) %>% pull(!! sym$col) %>% `[[`(1)
     cmpdf = res %>% filter(cond == cmp) %>% pull(!! sym$col) %>% `[[`(1)
     if (! "stat" %in% colnames(refdf)) {
@@ -44,7 +44,7 @@ volcano_or_compare = function(ref, cmp, col="genes", thresh=2.5, label_base=200,
         mutate(shape = ifelse(label %in% hollow, 1, 16),
                label = ifelse(showlab | label %in% hl, label, NA))
 
-    ggplot(rdf, aes_string(x=cmp, y=ref)) +
+    ggplot(rdf, aes_string(x=ref, y=cmp)) +
         geom_vline(xintercept=0, size=1, color="grey", linetype="dashed") +
         geom_hline(yintercept=0, size=1, color="grey", linetype="dashed") +
         geom_point(aes(color=quad, shape=shape), size=2) +
@@ -75,8 +75,8 @@ volcano = function(rname, col, hl=c()) {
 }
 
 plot_matrix = function(res, col="genes") {
-    cmp = tidyr::crossing(tibble(ref = res$cond),
-                          tibble(cmp = res$cond)) %>%
+    cmp = tidyr::crossing(tibble(cmp = res$cond),
+                          tibble(ref = res$cond)) %>%
         rowwise() %>%
             mutate(plot = list(volcano_or_compare(ref, cmp, col))) %>%
         ungroup()
@@ -95,7 +95,7 @@ sys$run({
     res = readRDS(args$infile)
     plots = sapply(colnames(res)[-1], plot_matrix, res=res, simplify=FALSE)
 
-    pdf(args$plotfile, 50, 50)
+    pdf(args$plotfile, 55, 55)
     for (p in plots)
         print(p)
     dev.off()
