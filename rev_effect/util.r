@@ -136,7 +136,7 @@ test_gset = function(res, set) {
 }
 
 test_gsets = function(res, sets) {
-    sets = gset$filter(sets, valid=na.omit(res$label), min=4, max=250)
+    sets = gset$filter(sets, valid=na.omit(res$label), min=4)
     result = lapply(sets, test_gset, res=res) %>%
         setNames(names(sets)) %>%
         dplyr::bind_rows(.id="label") %>%

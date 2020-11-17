@@ -1,5 +1,6 @@
 sys = import('sys')
 idmap = import('process/idmap')
+gset = import('data/genesets')
 enr = import('tools/enrichr')
 msdb = import('tools/msigdb')
 
@@ -8,7 +9,9 @@ args = sys$cmd$parse(
     opt('h', 'human', 'save to RData', 'human/KEA_2015.rds'),
     opt('m', 'mouse', 'save to RData', 'mouse/KEA_2015.rds'))
 
-if (args$geneset %in% enr$dbs()$name) {
+if (args$geneset == "GO_Biological_Process_2020") {
+    sets = gset$go(as_list=TRUE)
+} else if (args$geneset %in% enr$dbs()$name) {
     sets = enr$genes(args$geneset)
 } else if (args$geneset %in% msdb$dbs()) {
     sets = msdb$genes(args$geneset)
