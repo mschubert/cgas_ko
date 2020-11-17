@@ -66,12 +66,12 @@ volcano = function(rname, col, hl=c()) {
     if ("baseMean" %in% colnames(rdf))
         rdf %>%
             mutate(size = log10(baseMean + 1)) %>%
-            plt$p_effect("padj", "log2FoldChange") %>%
-            plt$volcano(repel=TRUE) + ggtitle(rname)
+            plt$p_effect("padj", "log2FoldChange", thresh=0.1) %>%
+            plt$volcano(p=0.1, repel=TRUE) + ggtitle(rname)
     else
         rdf %>%
-            plt$p_effect("adj.p", "estimate") %>%
-            plt$volcano(repel=TRUE, base.size=0.1, text.size=2.5) + ggtitle(rname)
+            plt$p_effect("adj.p", "estimate", thresh=0.1) %>%
+            plt$volcano(p=0.1, repel=TRUE, base.size=0.1, text.size=2.5) + ggtitle(rname)
 }
 
 plot_matrix = function(res, col="genes") {
