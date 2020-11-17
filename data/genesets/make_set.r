@@ -11,6 +11,21 @@ args = sys$cmd$parse(
 
 if (args$geneset == "GO_Biological_Process_2020") {
     sets = gset$go(as_list=TRUE)
+} else if (args$geneset == "DoRothEA") {
+    sets = dorothea::dorothea_hs %>%
+        filter(mor == 1) %>%
+        group_by(tf) %>%
+            filter(case_when(
+                sum(confidence %in% c("A")) >= 20 ~ confidence %in% c("A"),
+                sum(confidence %in% c("A", "B")) >= 20 ~ confidence %in% c("A", "B"),
+                sum(confidence %in% c("A", "B", "C")) >= 20 ~ confidence %in% c("A", "B", "C"),
+                sum(confidence %in% c("A", "B", "C", "D")) >= 20 ~ confidence %in% c("A", "B", "C", "D"),
+                TRUE ~ FALSE
+            )) %>%
+            mutate(tf = sprintf("%s (%s)", tf, tolower(tail(sort(confidence), 1)))) %>%
+        ungroup() %>%
+        select(target, tf) %>%
+        unstack()
 } else if (args$geneset %in% enr$dbs()$name) {
     sets = enr$genes(args$geneset)
 } else if (args$geneset %in% msdb$dbs()) {

@@ -1,6 +1,7 @@
 genesets:
     - GO_Biological_Process_2020
     - CH.HALLMARK
+    - DoRothEA
     - ENCODE_and_ChEA_Consensus_TFs_from_ChIP-X
     - Reactome_2016
     - KEGG_2016
