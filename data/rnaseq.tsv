@@ -23,9 +23,9 @@ SU_BT549_21_S28	1	stat1	dmso	24	2
 SU_BT549_22_S29	1	stat1	dmso	48	2
 SU_BT549_23_S30	1	stat1	rev	24	2
 SU_BT549_24_S31	1	stat1	rev	48	2
-#SU_BT549_25_S32	1	cgas	none	NA	2
-#SU_BT549_26_S33	1	cgas	dmso	24	2
-#SU_BT549_27_S34	1	cgas	rev	24	2
+SU_BT549_25_S32	1	cgas	none	NA	2
+SU_BT549_26_S33	1	cgas	dmso	24	2
+SU_BT549_27_S34	1	cgas	rev	24	2
 SU_BT549_28_S35	1	wt	ifng	2	2
 SU_201007_BT549_Christy_1_S1	2	stat3	dmso	24	1
 SU_201007_BT549_Christy_2_S2	2	stat3	dmso	24	2

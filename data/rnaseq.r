@@ -14,7 +14,7 @@ plot_pca = function(eset, vst) {
         xlab(paste0("PC1: ", pcavar[1], "% variance")) +
         ylab(paste0("PC2: ", pcavar[2], "% variance")) +
         coord_fixed() +
-        ggrepel::geom_text_repel(aes(label=paste(genotype, treatment, sep=":"))) +
+        ggrepel::geom_text_repel(aes(label=paste(genotype, treatment, sep=":")), size=2) +
         theme_classic()
 }
 
