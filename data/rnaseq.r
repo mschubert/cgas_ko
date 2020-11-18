@@ -1,11 +1,11 @@
 library(dplyr)
 library(ggplot2)
+library(DESeq2)
 sys = import('sys')
 idmap = import('process/idmap')
 
-plot_pca = function(eset) {
-    vst = DESeq2::varianceStabilizingTransformation(eset)
-    pcadata = DESeq2::plotPCA(vst, intgroup=c("batch", "genotype", "treatment"), returnData=TRUE)
+plot_pca = function(eset, vst) {
+    pcadata = DESeq2::plotPCA(vst, intgroup=c("batch", "genotype", "treatment","time"), returnData=TRUE)
     pcavar = round(100 * attr(pcadata, "percentVar"))
 
     ggplot(pcadata, aes(PC1, PC2)) +
@@ -16,6 +16,37 @@ plot_pca = function(eset) {
         coord_fixed() +
         ggrepel::geom_text_repel(aes(label=paste(genotype, treatment, sep=":"))) +
         theme_classic()
+}
+
+#plot_dist = function(eset, vst) {
+#    meta = as.data.frame(SummarizedExperiment::colData(eset)) %>%
+#        mutate()
+#    sample_dist = as.matrix(dist(t(SummarizedExperiment::assay(vst))))
+#
+#}
+
+plot_kos = function(eset) {
+    genes = c("CGAS", "STAT1", "STAT3", "IL6", "IFNA", "RELB", "CCL5", "CXCL10", "MYC", "BIRC5")
+    nr = counts(eset, normalized=TRUE)
+    rownames(nr) = idmap$gene(rownames(nr), to="hgnc_symbol")
+    names(dimnames(nr)) = c("gene", "sample_id")
+    dset = reshape2::melt(nr, value.name="reads") %>%
+        as_tibble() %>%
+        filter(gene %in% genes) %>%
+        inner_join(colData(eset) %>% as.data.frame()) %>%
+        mutate(cond = paste(genotype, sub("\\+$", "", sub("\\+?dmso|none|rev", "", treatment))),
+               rev = ifelse(grepl("rev", treatment), "rev", ifelse(grepl("dmso", treatment), "dmso", "none")),
+               rev = factor(rev, levels=c("rev", "dmso", "none")),
+               treatment = gsub("\\+| ", "", sub("dmso|rev|none", "", treatment)),
+               time = ifelse(time == 48, "48", NA))
+    ggplot(dset, aes(x=treatment, y=reads)) +
+        geom_point(aes(color=rev, shape=factor(replicate)), size=2,
+                   position=position_jitter(w=0.15,h=0), alpha=0.5) +
+        geom_text(aes(label=time), size=1.5, position=position_jitter(w=0.15,h=0)) +
+        facet_grid(gene ~ genotype, scales="free", space="free_x") +
+        scale_y_log10() +
+        theme(axis.text.x = element_text(angle=45, hjust=1)) +
+        theme_light()
 }
 
 sys$run({
@@ -41,11 +72,14 @@ sys$run({
                genotype = relevel(factor(genotype), "wt"),
                treatment = relevel(factor(treatment), "dmso"))
     narray::intersect(reads, samples$sample_id, along=2)
-    eset = DESeq2::DESeqDataSetFromMatrix(reads, samples, ~1)
+    eset = DESeq2::DESeqDataSetFromMatrix(reads, samples, ~1) %>%
+        DESeq2::estimateSizeFactors()
 
-    p = plot_pca(eset)
+    vst = DESeq2::varianceStabilizingTransformation(eset)
     pdf(args$plotfile, 10, 8)
-    print(p)
+    print(plot_pca(eset, vst))
+#    print(plot_dist(eset, vst))
+    print(plot_kos(eset))
     dev.off()
 
     saveRDS(eset, file=args$outfile)
