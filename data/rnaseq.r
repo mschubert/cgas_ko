@@ -5,16 +5,38 @@ sys = import('sys')
 idmap = import('process/idmap')
 
 plot_pca = function(eset, vst) {
-    pcadata = DESeq2::plotPCA(vst, intgroup=c("batch", "genotype", "treatment","time"), returnData=TRUE)
+    pcadata = DESeq2::plotPCA(vst,
+        intgroup=c("batch", "genotype", "treatment", "drug", "rev", "time", "replicate"), returnData=TRUE)
     pcavar = round(100 * attr(pcadata, "percentVar"))
 
-    ggplot(pcadata, aes(PC1, PC2)) +
-        geom_point(aes(shape=factor(batch), fill=genotype, color=treatment), size=3) +
-#        scale_shape_manual(values=setNames(c(21, 24, 25), c("parental", "gains", "losses"))) +
+    revs = as.data.frame(pcadata) %>%
+        filter(time %in% c("24", "48")) %>%
+        group_by(genotype, drug, time, replicate) %>%
+            filter(n() == 2 & all(c("dmso", "rev") %in% rev)) %>%
+            summarize(revPC1 = PC1[rev == "rev"],
+                      revPC2 = PC2[rev == "rev"],
+                      PC1 = PC1[rev == "dmso"],
+                      PC2 = PC2[rev == "dmso"])
+
+    norev = as.data.frame(pcadata) %>%
+        filter(rev == "dmso")
+
+    shapes = c(dmso=21, ifng=24, ifna=25, il6=22, ask=23)
+    colors = c(wt="#33a02c", stat1="#fb9a99", cgas="#1f78b4", stat3="#e31a1c",
+               `cgas+stat1`="#cab2d6", `cgas+stat3`="#6a3d9a", relb="#b15928")
+
+    ggplot(norev, aes(PC1, PC2)) +
+        geom_point(aes(shape=drug, fill=genotype), size=3, alpha=0.8) +
+        geom_segment(data=revs, aes(xend=revPC1, yend=revPC2, color=genotype),
+                     arrow=arrow(length=unit(1,"mm"), type="closed"), alpha=0.8) +
+        geom_text(aes(label=time), size=1.5) +
         xlab(paste0("PC1: ", pcavar[1], "% variance")) +
         ylab(paste0("PC2: ", pcavar[2], "% variance")) +
         coord_fixed() +
-        ggrepel::geom_text_repel(aes(label=paste(genotype, treatment, sep=":")), size=2) +
+        scale_shape_manual(values=shapes) +
+        scale_fill_manual(values=colors) +
+        scale_color_manual(values=colors) +
+        guides(fill = guide_legend(override.aes=list(shape=21))) +
         theme_classic()
 }
 
@@ -34,12 +56,8 @@ plot_kos = function(eset) {
         as_tibble() %>%
         filter(gene %in% genes) %>%
         inner_join(colData(eset) %>% as.data.frame()) %>%
-        mutate(cond = paste(genotype, sub("\\+$", "", sub("\\+?dmso|none|rev", "", treatment))),
-               rev = ifelse(grepl("rev", treatment), "rev", ifelse(grepl("dmso", treatment), "dmso", "none")),
-               rev = factor(rev, levels=c("rev", "dmso", "none")),
-               treatment = gsub("\\+| ", "", sub("dmso|rev|none", "", treatment)),
-               time = ifelse(time == 48, "48", NA))
-    ggplot(dset, aes(x=treatment, y=reads)) +
+        mutate(time = ifelse(time == "24", NA, time))
+    ggplot(dset, aes(x=drug, y=reads)) +
         geom_point(aes(color=rev, shape=factor(replicate)), size=2,
                    position=position_jitter(w=0.15,h=0), alpha=0.5) +
         geom_text(aes(label=time), size=1.5, position=position_jitter(w=0.15,h=0)) +
@@ -71,13 +89,18 @@ sys$run({
         mutate(batch = factor(batch),
                genotype = relevel(factor(genotype), "wt"),
                treatment = relevel(factor(treatment), "dmso"))
+    samples$rev = relevel(factor(ifelse(grepl("rev", samples$treatment), "rev", "dmso")), "dmso")
+    samples$drug = sub("\\+?rev\\+?", "", samples$treatment)
+    samples$drug[samples$drug == ""] = "dmso"
+    samples$drug = relevel(factor(samples$drug), "dmso")
     narray::intersect(reads, samples$sample_id, along=2)
     eset = DESeq2::DESeqDataSetFromMatrix(reads, samples, ~1) %>%
         DESeq2::estimateSizeFactors()
 
     vst = DESeq2::varianceStabilizingTransformation(eset)
     pdf(args$plotfile, 10, 8)
-    print(plot_pca(eset, vst))
+    print(plot_pca(eset, vst) + ggtitle("PCA all samples"))
+    print(plot_pca(eset[,-(25:27)], vst[,-(25:27)]) + ggtitle("PCA without cGAS outlier"))
 #    print(plot_dist(eset, vst))
     print(plot_kos(eset))
     dev.off()
