@@ -74,16 +74,20 @@ sys$run({
         opt('p', 'plotfile', 'pdf', 'rnaseq.pdf')
     )
 
-    sept2019 = readr::read_tsv("rnaseq_new/count_matrix_known_barcodes_STL_and_USS_genes_2019.txt.gz")
-    oct2020 = readr::read_tsv("rnaseq_new/count_matrix_known_barcodes_STL_and_USS_genes_2020.txt.gz")
-
-    batch1 = data.matrix(sept2019[-1])
-    rownames(batch1) = sub("\\.[0-9]+$", "", sept2019$gene_id)
-    batch2 = data.matrix(oct2020[-1])
-    rownames(batch2) = sub("\\.[0-9]+$", "", oct2020$gene_id)
+    rtabs = c(
+        "rnaseq_new/count_matrix_known_barcodes_STL_and_USS_genes_2019.txt.gz",
+        "rnaseq_new/count_matrix_known_barcodes_STL_and_USS_genes_2020.txt.gz",
+        "rnaseq_2020-12/count_matrix_known_barcodes_STL_and_USS_genes.txt.gz"
+    ) %>%
+        lapply(function(f) {
+            reads = readr::read_tsv(f)
+            rmat = data.matrix(reads[-1])
+            rownames(rmat) = sub("\\.[0-9]+$", "", reads$gene_id)
+            rmat
+        })
 
     # 18k genes unique to batch1, 9k unique to batch2, 21k common
-    reads = na.omit(narray::stack(batch1, batch2, along=2))
+    reads = na.omit(narray::stack(rtabs, along=2))
     reads = reads[rowSums(reads) > ncol(reads),]
     samples = readr::read_tsv("rnaseq.tsv") %>%
         mutate(batch = factor(batch),
