@@ -10,7 +10,7 @@ plot_pca = function(eset, vst) {
     pcavar = round(100 * attr(pcadata, "percentVar"))
 
     revs = as.data.frame(pcadata) %>%
-        filter(time %in% c("24", "48")) %>%
+        filter(time %in% c("24", "48", "72")) %>%
         group_by(genotype, drug, time, replicate) %>%
             filter(n() == 2 & all(c("dmso", "rev") %in% rev)) %>%
             summarize(revPC1 = PC1[rev == "rev"],
@@ -21,7 +21,7 @@ plot_pca = function(eset, vst) {
     norev = as.data.frame(pcadata) %>%
         filter(rev == "dmso")
 
-    shapes = c(dmso=21, ifng=24, ifna=25, il6=22, ask=23)
+    shapes = c(dmso=21, ifng=24, ifna=25, il6=22, ask=23, il6Ab=23)
     colors = c(wt="#33a02c", stat1="#fb9a99", cgas="#1f78b4", stat3="#e31a1c",
                `cgas+stat1`="#cab2d6", `cgas+stat3`="#6a3d9a", relb="#b15928")
 
@@ -69,10 +69,13 @@ plot_kos = function(eset) {
 
 sys$run({
     args = sys$cmd$parse(
+        opt('c', 'config', 'yaml', '../config.yaml'),
         opt('s', 'samples', 'tsv', 'rnaseq.tsv'),
         opt('o', 'outfile', 'rds', 'rnaseq.rds'),
         opt('p', 'plotfile', 'pdf', 'rnaseq.pdf')
     )
+
+    cfg = yaml::read_yaml(args$config)
 
     rtabs = c(
         "rnaseq_new/count_matrix_known_barcodes_STL_and_USS_genes_2019.txt.gz",
@@ -104,7 +107,9 @@ sys$run({
     vst = DESeq2::varianceStabilizingTransformation(eset)
     pdf(args$plotfile, 10, 8)
     print(plot_pca(eset, vst) + ggtitle("PCA all samples"))
-    print(plot_pca(eset[,-(25:27)], vst[,-(25:27)]) + ggtitle("PCA without cGAS outlier"))
+    eset = eset[,! colnames(eset) %in% names(cfg$rnaseq_exclude)]
+    vst = vst[,! colnames(vst) %in% names(cfg$rnaseq_exclude)]
+    print(plot_pca(eset, vst) + ggtitle("PCA without excluded samples"))
 #    print(plot_dist(eset, vst))
     print(plot_kos(eset))
     dev.off()

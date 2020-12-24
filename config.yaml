@@ -1,3 +1,9 @@
+rnaseq_exclude:
+    SU_BT549_25_S32: "clone outlier"
+    SU_BT549_26_S33: "clone outlier"
+    SU_BT549_27_S34: "clone outlier"
+    SU_WT_anti_IL6_rev_72h_S12: "bad RNA quality"
+
 genesets:
     - GO_Biological_Process_2020
     - MSigDB_Hallmark_2020

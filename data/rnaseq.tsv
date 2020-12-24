@@ -73,10 +73,10 @@ SU_STAT3_KO_DMSO_1_S5	3	stat3	dmso	48	1
 SU_STAT3_KO_DMSO_2_S6	3	stat3	dmso	48	2
 SU_STAT3_KO_rev_250nM_1_S7	3	stat3	rev	48	1
 SU_STAT3_KO_rev_250nM_2_S8	3	stat3	rev	48	2
-SU_WT_anti_IL6_48h_S9	3	wt	il6	48	1
-SU_WT_anti_IL6_72h_S10	3	wt	il6	48	2
-SU_WT_anti_IL6_rev_48h_S11	3	wt	il6+rev	48	1
-SU_WT_anti_IL6_rev_72h_S12	3	wt	il6+rev	48	2
+SU_WT_anti_IL6_48h_S9	3	wt	il6Ab	48	1
+SU_WT_anti_IL6_72h_S10	3	wt	il6Ab	72	1
+SU_WT_anti_IL6_rev_48h_S11	3	wt	il6Ab+rev	48	1
+SU_WT_anti_IL6_rev_72h_S12	3	wt	il6Ab+rev	72	1
 SU_cGAS_STAT1_KO_DMSO_1_S13	3	cgas+stat1	dmso	48	1
 SU_cGAS_STAT1_KO_DMSO_2_S14	3	cgas+stat1	dmso	48	2
 SU_cGAS_STAT1_KO_rev_250nM_1_S15	3	cgas+stat1	rev	48	1
