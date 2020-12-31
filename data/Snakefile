@@ -7,7 +7,7 @@ subworkflow genesets:
 rule all:
     input:
         "rnaseq.pdf",
-        expand("gsva/{sets}.rds", sets=config['genesets'])
+#        expand("gsva/{sets}.rds", sets=config['genesets'])
 
 rule rnaseq:
     input:
@@ -33,4 +33,4 @@ rule gsva:
         "Rscript {input.rscript}"
             " --eset {input.eset}"
             " --setfile {input.setfile}"
-            " --outfiel {output.outfile}"
+            " --outfile {output.outfile}"
