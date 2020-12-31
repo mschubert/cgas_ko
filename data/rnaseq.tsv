@@ -89,5 +89,5 @@ SU_cGAS_KO_IL6_1_S21	3	cgas	il6	48	1
 SU_cGAS_KO_IL6_2_S22	3	cgas	il6	48	2
 SU_cGAS_KO_rev_IL6_1_S23	3	cgas	rev+il6	48	1
 SU_cGAS_KO_rev_IL6_2_S24	3	cgas	rev+il6	48	2
-SU_cGAS_KO_FT_DMSO_S25	3	cgas	dmso	48	1
-SU_cGAS_KO_FT_rev_S26	3	cgas	rev	48	1
+SU_cGAS_KO_FT_DMSO_S25	3	cgas	dmso	48FT	1
+SU_cGAS_KO_FT_rev_S26	3	cgas	rev	48FT	1

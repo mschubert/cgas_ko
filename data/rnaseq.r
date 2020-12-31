@@ -10,7 +10,7 @@ plot_pca = function(eset, vst) {
     pcavar = round(100 * attr(pcadata, "percentVar"))
 
     revs = as.data.frame(pcadata) %>%
-        filter(time %in% c("24", "48", "72")) %>%
+        filter(time != "0") %>%
         group_by(genotype, drug, time, replicate) %>%
             filter(n() == 2 & all(c("dmso", "rev") %in% rev)) %>%
             summarize(revPC1 = PC1[rev == "rev"],
@@ -107,9 +107,19 @@ sys$run({
     vst = DESeq2::varianceStabilizingTransformation(eset)
     pdf(args$plotfile, 10, 8)
     print(plot_pca(eset, vst) + ggtitle("PCA all samples"))
+    for (batch in levels(colData(eset)$batch)) {
+        b = colData(eset)$batch == batch
+        print(plot_pca(eset[,b], vst[,b]) + ggtitle(paste("PCA batch", batch)))
+    }
+
     eset = eset[,! colnames(eset) %in% names(cfg$rnaseq_exclude)]
     vst = vst[,! colnames(vst) %in% names(cfg$rnaseq_exclude)]
-    print(plot_pca(eset, vst) + ggtitle("PCA without excluded samples"))
+    print(plot_pca(eset, vst) + ggtitle("PCA all samples (no outliers)"))
+    for (batch in levels(colData(eset)$batch)) {
+        b = colData(eset)$batch == batch
+        print(plot_pca(eset[,b], vst[,b]) + ggtitle(paste("PCA batch", batch, "(no outliers)")))
+    }
+
 #    print(plot_dist(eset, vst))
     print(plot_kos(eset))
     dev.off()

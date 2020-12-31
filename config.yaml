@@ -3,6 +3,8 @@ rnaseq_exclude:
     SU_BT549_26_S33: "clone outlier"
     SU_BT549_27_S34: "clone outlier"
     SU_WT_anti_IL6_rev_72h_S12: "bad RNA quality"
+    SU_cGAS_KO_FT_DMSO_S25: "clone outlier"
+    SU_cGAS_KO_FT_rev_S26: "clone outlier"
 
 genesets:
     - GO_Biological_Process_2020
