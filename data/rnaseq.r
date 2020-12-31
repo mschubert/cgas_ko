@@ -120,6 +120,11 @@ sys$run({
         print(plot_pca(eset[,b], vst[,b]) + ggtitle(paste("PCA batch", batch, "(no outliers)")))
     }
 
+    all48 = colData(eset)$time == "48"
+    print(plot_pca(eset[,all48], vst[,all48]) + ggtitle("PCA 48h samples (no outliers)"))
+    rev48 = colData(eset)$time == "48" & colData(eset)$drug != "ifna"
+    print(plot_pca(eset[,rev48], vst[,rev48]) + ggtitle("PCA rev 48h samples (no outliers)"))
+
 #    print(plot_dist(eset, vst))
     print(plot_kos(eset))
     dev.off()
