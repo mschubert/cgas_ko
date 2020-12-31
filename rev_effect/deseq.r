@@ -5,21 +5,24 @@ util = import('./util')
 
 test_rev = function(eset, cond) {
     eset2 = eset[, colData(eset)$cond == cond]
-    design(eset2) = ~ replicate + rev
+    print(colData(eset2))
+    design(eset2) = ~  rev
+#    design(eset2) = ~ replicate + rev
     res = DESeq(eset2) %>% util$extract_result("rev")
 }
 
 args = sys$cmd$parse(
     opt('e', 'eset', 'rds', '../data/rnaseq.rds'),
     opt('o', 'outfile', 'rds', 'deseq.rds'),
-    arg('setfiles', 'rds', arity='*', '../data/genesets/human/CH.HALLMARK.rds')
+    arg('setfiles', 'rds', arity='*', '../data/genesets/human/MSigDB_Hallmark_2020.rds')
 )
 
 sets = sapply(args$setfiles, readRDS)
 names(sets) = basename(tools::file_path_sans_ext(names(sets)))
 
 eset = readRDS(args$eset)
-eset = eset[,! colData(eset)$treatment %in% c("none", "ifna", "ifng") & colData(eset)$time == 24]
+eset = eset[, colData(eset)$time == "48" & colData(eset)$treatment != "ifna" &
+              ! grepl("il6Ab", colData(eset)$treatment)] # only one rep
 colData(eset)$treatment = sub("none", "dmso", colData(eset)$treatment)
 colData(eset)$cond = sub("\\+?(rev|dmso)", "",
                          paste(colData(eset)$genotype, colData(eset)$treatment, sep="+"))
