@@ -1,5 +1,6 @@
 library(dplyr)
 sys = import('sys')
+idmap = import('process/idmap')
 
 args = sys$cmd$parse(
     opt('e', 'eset', 'rds', 'rnaseq.rds'),
@@ -10,6 +11,9 @@ args = sys$cmd$parse(
 eset = readRDS(args$eset)
 sets = readRDS(args$setfile)
 
-scores = GSVA::gsva(expr=expr, gset.idx.list=sets, parallel.sz=0)
+vst = SummarizedExperiment::assay(DESeq2::varianceStabilizingTransformation(eset))
+rownames(vst) = idmap$gene(rownames(vst), to="hgnc_symbol")
+
+scores = GSVA::gsva(expr=vst, gset.idx.list=sets, parallel.sz=0)
 
 saveRDS(t(scores), file=args$outfile)
