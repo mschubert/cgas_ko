@@ -17,7 +17,7 @@ args = sys$cmd$parse(
     arg('setfiles', 'rds', arity='*', '../data/genesets/human/MSigDB_Hallmark_2020.rds')
 )
 
-sets = sapply(args$setfiles, readRDS)
+sets = sapply(args$setfiles, readRDS, simplify=FALSE)
 names(sets) = basename(tools::file_path_sans_ext(names(sets)))
 
 eset = readRDS(args$eset)
