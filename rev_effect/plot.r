@@ -8,7 +8,7 @@ util = import('./util')
 
 #' Compare separation statistics between two samples
 #'
-#' @param res         A data.frame with columns specified in `ref`, `cmp` and `col`
+#' @param res         A data.frame with columns 'cond' and specified in `ref`, `cmp` and `col`
 #' @param ref         Condition to be plotted on the x axis (character)
 #' @param cmp         Condition to be plotted on the y axis (character)
 #' @param col         Column in data.frame `res` to use (default: 'genes')

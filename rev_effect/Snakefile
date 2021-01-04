@@ -10,7 +10,8 @@ subworkflow genesets:
 
 rule all:
     input:
-        "rev_effect.pdf"
+        expand("rev_effect-{time}h.pdf", time=['24', '48']),
+        "rep_compare_plot.pdf"
 
 rule deseq:
     input:
@@ -18,7 +19,7 @@ rule deseq:
         eset = data("rnaseq.rds"),
         setfiles = genesets(expand("human/{set}.rds", set=config["genesets"]))
     output:
-        outfile = "deseq.rds"
+        outfile = "deseq-{time}h.rds"
     shell:
         "Rscript {input.rscript}"
             " --eset {input.eset}"
@@ -28,10 +29,37 @@ rule deseq:
 rule plot:
     input:
         rscript = "plot.r",
-        infile = "deseq.rds"
+        infile = "deseq-{time}h.rds"
     output:
-        plotfile = "rev_effect.pdf"
+        plotfile = "rev_effect-{time}h.pdf"
     shell:
         "Rscript {input.rscript}"
             " --infile {input.infile}"
+            " --plotfile {output.plotfile}"
+
+rule rep_compare:
+    input:
+        rscript = "rep_compare.r",
+        eset = data("rnaseq.rds"),
+        setfiles = genesets("human/MSigDB_Hallmark_2020.rds")
+    output:
+        outfile = "rep_compare-{time}h.rds"
+    shell:
+        "Rscript {input.rscript}"
+            " --eset {input.eset}"
+            " --time {wildcards.time}"
+            " --outfile {output.outfile}"
+            " {input.setfiles}"
+
+rule rep_compare_plot:
+    input:
+        rscript = "rep_compare_plot.r",
+        short = "rep_compare-24h.rds",
+        long = "rep_compare-48h.rds"
+    output:
+        plotfile = "rep_compare_plot.pdf"
+    shell:
+        "Rscript {input.rscript}"
+            " --short {input.short}"
+            " --long {input.long}"
             " --plotfile {output.plotfile}"
