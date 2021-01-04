@@ -6,10 +6,18 @@ sys = import('sys')
 plt = import('plot')
 util = import('./util')
 
-volcano_or_compare = function(ref, cmp, col="genes", thresh=2, label_base=200, hl=c(), hollow=c()) {
-    if (ref == cmp)
-        return(volcano(ref, col, hl))
-
+#' Compare separation statistics between two samples
+#'
+#' @param res         A data.frame with columns specified in `ref`, `cmp` and `col`
+#' @param ref         Condition to be plotted on the x axis (character)
+#' @param cmp         Condition to be plotted on the y axis (character)
+#' @param col         Column in data.frame `res` to use (default: 'genes')
+#' @param thresh      Do not plot points below this value to prevent crowding (default: 2)
+#' @param label_base  How many points to label, scaled by label length (default: 200)
+#' @param hl          Character vector of filled+border circles (default: none)
+#' @param hollow      Character vector of circle-only points (default: none)
+#' @return            A ggplot2 object with a scatter plot of x/y separation
+compare = function(res, ref, cmp, col="genes", thresh=2, label_base=200, hl=c(), hollow=c()) {
     sym = list(x=rlang::sym(ref), y=rlang::sym(cmp), col=rlang::sym(col))
     refdf = res %>% filter(cond == ref) %>% pull(!! sym$col) %>% `[[`(1)
     cmpdf = res %>% filter(cond == cmp) %>% pull(!! sym$col) %>% `[[`(1)
@@ -56,7 +64,14 @@ volcano_or_compare = function(ref, cmp, col="genes", thresh=2, label_base=200, h
         scale_color_manual(name="change", values=colors, drop=FALSE)
 }
 
-volcano = function(rname, col, hl=c()) {
+#' Volcano plot of differential expression for a sample
+#'
+#' @param res    A data.frame with columns specified in `ref`, `cmp` and `col`
+#' @param rname  Condition to be plotted (character)
+#' @param col    Column in data.frame `res` to use (default: 'genes')
+#' @param hl     Character vector of filled+border circles (default: none)
+#' @return       A ggplot2 object of volcano plot
+volcano = function(res, rname, col, hl=c()) {
     rdf = res %>%
         filter(cond == rname) %>%
         pull(!! rlang::sym(col)) %>%
@@ -74,7 +89,19 @@ volcano = function(rname, col, hl=c()) {
             plt$volcano(p=0.1, repel=TRUE, base.size=0.1, text.size=2.5) + ggtitle(rname)
 }
 
+#' Plot grid of volcano (diagonal) or condition compare (off-diagonal)
+#'
+#' @param res    A data.frame with columns specified in `ref`, `cmp` and `col`
+#' @param col    Column in data.frame `res` to use (default: 'genes')
+#' @return       A patchwork grid of volcano plots or correlation plots
 plot_matrix = function(res, col="genes") {
+    volcano_or_compare = function(ref, cmp, col="genes", thresh=2, label_base=200, hl=c(), hollow=c()) {
+        if (ref == cmp)
+            volcano(res, ref, col, hl)
+        else
+            compare(res, ref, cmp, col, thresh, label_base, hl, hollow)
+    }
+
     cmp = tidyr::crossing(tibble(cmp = res$cond),
                           tibble(ref = res$cond)) %>%
         rowwise() %>%
