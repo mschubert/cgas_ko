@@ -23,8 +23,7 @@ sets = sapply(args$setfiles, readRDS, simplify=FALSE)
 names(sets) = basename(tools::file_path_sans_ext(names(sets)))
 
 eset = readRDS(args$eset)
-eset = eset[, colData(eset)$time == args$time & colData(eset)$treatment != "ifna" &
-              ! grepl("il6Ab", colData(eset)$treatment)] # only one rep
+eset = eset[, colData(eset)$time == args$time & colData(eset)$treatment != "ifna"]
 colData(eset)$treatment = sub("none", "dmso", colData(eset)$treatment)
 colData(eset)$cond = sub("\\+?(rev|dmso)", "",
                          paste(colData(eset)$genotype, colData(eset)$treatment, sep="+"))
@@ -32,7 +31,10 @@ colData(eset)$cond = relevel(factor(colData(eset)$cond), "wt")
 colData(eset)$rev = ifelse(grepl("rev", colData(eset)$treatment), 1, 0)
 colData(eset)$replicate = factor(colData(eset)$replicate)
 
-cond = levels(colData(eset)$cond)
+te = table(eset$cond) == 4
+eset = eset[,eset$cond %in% names(te)[te]]
+cond = levels(droplevels(colData(eset)$cond))
+
 res = sapply(cond, test_rev, eset=eset, simplify=FALSE) %>%
     lapply(. %>% bind_rows(.id="rep")) %>%
     bind_rows(.id="cond") %>%
