@@ -21,10 +21,13 @@ do_compare = function(res24, res48, .cond) {
     plots = list(
         do_plot(subs24, "genes", "24"),
         do_plot(subs24, "MSigDB_Hallmark_2020", "24"),
+        do_plot(subs24, "GO_Biological_Process_2020", "24"),
         do_plot(subs48, "genes", "48"),
-        do_plot(subs48, "MSigDB_Hallmark_2020", "48")
+        do_plot(subs48, "MSigDB_Hallmark_2020", "48"),
+        do_plot(subs48, "GO_Biological_Process_2020", "48")
     )
-    plt$text(.cond, size=10) / wrap_plots(plots, guides="collect") + plot_layout(ncol=1, heights=c(1,20))
+    plt$text(.cond, size=10) / wrap_plots(plots, guides="collect", nrow=2) +
+        plot_layout(ncol=1, heights=c(1,20))
 }
 
 sys$run({
@@ -38,7 +41,7 @@ sys$run({
     res48 = readRDS(args$long)
 
     conds = intersect(res24$cond, res48$cond)
-    pdf(args$plotfile, 12, 12)
+    pdf(args$plotfile, 18, 12)
     for (cond in conds) {
         print(do_compare(res24, res48, cond))
     }

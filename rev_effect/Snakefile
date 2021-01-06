@@ -41,7 +41,8 @@ rule rep_compare:
     input:
         rscript = "rep_compare.r",
         eset = data("rnaseq.rds"),
-        setfiles = genesets("human/MSigDB_Hallmark_2020.rds")
+        setfiles = genesets(expand("human/{gset}.rds",
+            gset=["MSigDB_Hallmark_2020", "GO_Biological_Process_2020"]))
     output:
         outfile = "rep_compare-{time}h.rds"
     shell:
