@@ -23,6 +23,7 @@ rule deseq:
     shell:
         "Rscript {input.rscript}"
             " --eset {input.eset}"
+            " --time {wildcards.time}"
             " --outfile {output.outfile}"
             " {input.setfiles}"
 

@@ -13,6 +13,7 @@ test_rev = function(eset, cond) {
 
 args = sys$cmd$parse(
     opt('e', 'eset', 'rds', '../data/rnaseq.rds'),
+    opt('t', 'time', '24|48', '48'),
     opt('o', 'outfile', 'rds', 'deseq.rds'),
     arg('setfiles', 'rds', arity='*', '../data/genesets/human/MSigDB_Hallmark_2020.rds')
 )
@@ -21,7 +22,7 @@ sets = sapply(args$setfiles, readRDS, simplify=FALSE)
 names(sets) = basename(tools::file_path_sans_ext(names(sets)))
 
 eset = readRDS(args$eset)
-eset = eset[, colData(eset)$time == "48" & colData(eset)$treatment != "ifna" &
+eset = eset[, colData(eset)$time == args$time & colData(eset)$treatment != "ifna" &
               ! grepl("il6Ab", colData(eset)$treatment)] # only one rep
 colData(eset)$treatment = sub("none", "dmso", colData(eset)$treatment)
 colData(eset)$cond = sub("\\+?(rev|dmso)", "",
