@@ -115,15 +115,16 @@ plot_matrix = function(res, col="genes") {
 
 sys$run({
     args = sys$cmd$parse(
-        opt('i', 'infile', 'rds', 'deseq.rds'),
+        opt('i', 'infile', 'rds', 'deseq-48h.rds'),
         opt('p', 'plotfile', 'pdf', 'rev_effect.pdf')
     )
 
     res = readRDS(args$infile)
     res$cond = make.names(res$cond)
     plots = sapply(colnames(res)[-1], plot_matrix, res=res, simplify=FALSE)
+    n_tiles = nrow(res)
 
-    pdf(args$plotfile, 70, 70)
+    pdf(args$plotfile, 7*n_tiles, 7*n_tiles)
     for (p in plots)
         print(p)
     dev.off()
