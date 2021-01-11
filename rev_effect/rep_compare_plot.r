@@ -7,16 +7,21 @@ plt = import('plot')
 plt2 = import('./plot')
 
 do_compare = function(res24, res48, .cond) {
+    message(.cond)
     subs = . %>%
         filter(cond == .cond) %>%
         mutate(cond = paste(make.names(cond), rep, sep="."))
     subs24 = subs(res24)
     subs48 = subs(res48)
-    conds = subs24$cond
+    conds = unique(c(subs24$cond, subs48$cond))
 
-    do_plot = function(df, col, time)
-        plt2$compare(df, ref=conds[1], cmp=conds[2], col=col, thresh=1.5) +
-            labs(title=col, subtitle=time)
+    do_plot = function(df, col, time) {
+        if (nrow(df) == 2)
+            plt2$compare(df, ref=conds[1], cmp=conds[2], col=col, thresh=1.5) +
+                labs(title=col, subtitle=time)
+        else
+            plt$text(sprintf("%s : %i samples", col, nrow(df)))
+    }
 
     plots = list(
         do_plot(subs24, "genes", "24"),
@@ -40,7 +45,7 @@ sys$run({
     res24 = readRDS(args$short)
     res48 = readRDS(args$long)
 
-    conds = intersect(res24$cond, res48$cond)
+    conds = unique(c(res24$cond, res48$cond))
     pdf(args$plotfile, 18, 12)
     for (cond in conds) {
         print(do_compare(res24, res48, cond))
