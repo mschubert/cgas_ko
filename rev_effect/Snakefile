@@ -11,7 +11,7 @@ subworkflow genesets:
 rule all:
     input:
         expand("rev_effect-{time}h.pdf", time=['24', '48']),
-        "rep_compare_plot.pdf"
+        "rep_compare_plot.pdf", "inflamm_resp_overview.pdf"
 
 rule deseq:
     input:
@@ -55,11 +55,13 @@ rule rep_compare:
 
 rule rep_compare_plot:
     input:
-        rscript = "rep_compare_plot.r",
+        rscript = "{rscript}.r",
         short = "rep_compare-24h.rds",
         long = "rep_compare-48h.rds"
     output:
-        plotfile = "rep_compare_plot.pdf"
+        plotfile = "{rscript}.pdf"
+#    wildcard_constraints:
+#        rscript = "(rep_compare_plot|inflamm_resp_overview)\\.r"
     shell:
         "Rscript {input.rscript}"
             " --short {input.short}"
