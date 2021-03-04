@@ -67,27 +67,26 @@ plot_kos = function(eset) {
         theme_light()
 }
 
+#' Read a count table into a matrix
+load_table = function(fname) {
+    reads = readr::read_tsv(fname)
+    rmat = data.matrix(reads[-1])
+    rownames(rmat) = sub("\\.[0-9]+$", "", reads$gene_id)
+    rmat
+}
+
 sys$run({
     args = sys$cmd$parse(
         opt('c', 'config', 'yaml', '../config.yaml'),
         opt('s', 'samples', 'tsv', 'rnaseq.tsv'),
         opt('o', 'outfile', 'rds', 'rnaseq.rds'),
-        opt('p', 'plotfile', 'pdf', 'rnaseq.pdf')
+        opt('p', 'plotfile', 'pdf', 'rnaseq.pdf'),
+        arg('infiles', 'count tables', arity='*', list.files("count_tables",
+            "STL_and_USS_genes.*\\.txt\\.gz", recursive=TRUE, full.names=TRUE))
     )
 
     cfg = yaml::read_yaml(args$config)
-
-    rtabs = c(
-        "rnaseq_new/count_matrix_known_barcodes_STL_and_USS_genes_2019.txt.gz",
-        "rnaseq_new/count_matrix_known_barcodes_STL_and_USS_genes_2020.txt.gz",
-        "rnaseq_2020-12/count_matrix_known_barcodes_STL_and_USS_genes.txt.gz"
-    ) %>%
-        lapply(function(f) {
-            reads = readr::read_tsv(f)
-            rmat = data.matrix(reads[-1])
-            rownames(rmat) = sub("\\.[0-9]+$", "", reads$gene_id)
-            rmat
-        })
+    rtabs = lapply(args$infiles, load_table)
 
     # 18k genes unique to batch1, 9k unique to batch2, 21k common
     reads = na.omit(narray::stack(rtabs, along=2))
