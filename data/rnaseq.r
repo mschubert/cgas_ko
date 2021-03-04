@@ -21,7 +21,7 @@ plot_pca = function(eset, vst) {
     norev = as.data.frame(pcadata) %>%
         filter(rev == "dmso")
 
-    shapes = c(dmso=21, ifng=24, ifna=25, il6=22, ask=23, il6Ab=23)
+    shapes = c(dmso=21, ifng=24, ifna=25, il6=22, ask=23, il6Ab=23, jnk=1)
     colors = c(wt="#33a02c", stat1="#fb9a99", cgas="#1f78b4", stat3="#e31a1c",
                `cgas+stat1`="#cab2d6", `cgas+stat3`="#6a3d9a", relb="#b15928")
 
