@@ -3,7 +3,7 @@ comparisons:
         samples:
             genotype: [ wt, cgas ]
             treatment: rev
-        design: ~ batch + genotype #TODO check
+        design: ~ batch + genotype
         extract: genotype_wt_vs_cgas
 
     BT549 cGAS KO reversine vs BT549 STAT3 KO reversine:
@@ -24,7 +24,7 @@ comparisons:
         samples:
             genotype: [ cgas+stat1, wt ]
             treatment: rev
-        design: ~ batch + genotype #TODO check
+        design: ~ batch + genotype
         extract: genotype_cgas.stat1_vs_wt
 
     BT549 cGAS KO reversine vs BT549 cGAS KO reversine + IL6:
@@ -39,63 +39,63 @@ comparisons:
         samples:
             genotype: [ cgas, wt ]
             treatment: [ rev+il6, rev ]
-        design: ~ batch + treatment #TODO check
+        design: ~ batch + treatment
         extract: treatment_rev.il6_vs_rev
 
     BT549 WT reversine vs BT549 WT reversine + IL6:
         samples:
             genotype: wt
             treatment: [ rev, rev+il6 ]
-        design: ~ batch + treatment #TODO check
+        design: ~ batch + treatment
         extract: treatment_rev_vs_rev.il6
 
     BT549 cGAS KO reversine vs BT549 RelB KO reversine:
         samples:
             genotype: [ cgas, relb ]
             treatment: rev
-        design: ~ batch + genotype #TODO check
+        design: ~ batch + genotype
         extract: genotype_cgas_vs_relb
 
     BT549 RelB KO reversine vs BT549 STAT3 KO reversine:
         samples:
             genotype: [ relb, stat3 ]
             treatment: rev
-        design: ~ batch + genotype #TODO check
+        design: ~ batch + genotype
         extract: genotype_relb_vs_stat3
 
-    BT549 cGAS KO reversine vs BT549 cGAS KO reversine + ASKi:
+    BT549 cGAS KO reversine vs BT549 cGAS KO reversine + ASKi: # aski or jnki?
         samples:
             genotype: cgas
-            treatment: [ rev, rev+jnk ] #FIXME: ASKi? (also: others with ASKi)
-        design: ~ batch + treatment #TODO check
+            treatment: [ rev, rev+jnk ]
+        design: ~ batch + treatment
         extract: treatment_rev_vs_rev.jnk
 
-    BT549 cGAS KO reversine + ASKi vs BT549 WT reversine:
+    BT549 cGAS KO reversine + ASKi vs BT549 WT reversine: # ask or jnk?
         samples:
             genotype: [ cgas, wt ]
             treatment: [ rev+jnk, rev ]
-        design: ~ batch + genotype #TODO check
+        design: ~ batch + genotype
         extract: treatment_cgas_vs_wt
 
-    BT549 WT reversine vs BT549 WT reversine + ASKi:
+    BT549 WT reversine vs BT549 WT reversine + ASKi: # ask or jnk?
         samples:
             genotype: wt
             treatment: [ rev, rev+jnk ]
-        design: ~ batch + treatment #TODO check
+        design: ~ batch + treatment
         extract: treatment_rev_vs_rev.jnk
 
     BT549 WT reversine vs BT549 WT reversine + tocilizumab:
         samples:
             genotype: wt
-            treatment: [ rev, rev+il6 ]
-        design: ~ batch + treatment #TODO check
-        extract: treatment_rev_vs_rev.il6
+            treatment: [ rev, rev+il6Ab ]
+        design: ~ batch + treatment
+        extract: treatment_rev_vs_rev.il6Ab
 
     BT549 WT reversine + tocilizumab vs BT549 cGAS KO reversine:
         samples:
             genotype: [ wt, cgas ]
             treatment: [ il6Ab+rev, rev ]
-        design: ~ batch + genotype #TODO check
+        design: ~ batch + genotype
         extract: genotype_wt_vs_cgas
 
     BT549 WT DMSO vs Reversine:
@@ -116,7 +116,7 @@ comparisons:
         samples:
             genotype: stat1
             treatment: [ dmso, rev ]
-        design: ~ batch + treatment #TODO check
+        design: ~ batch + treatment
         extract: treatment_dmso_vs_rev
 
     BT549 STAT3 KO DMSO vs Reversine:
@@ -137,7 +137,7 @@ comparisons:
         samples:
             genotype: [ wt, cgas ]
             treatment: dmso
-        design: ~ batch + genotype #TODO check
+        design: ~ batch + genotype
         extract: genotype_wt_vs_cgas
 
     WT DMSO vs STAT1 KO DMSO:
@@ -152,47 +152,47 @@ comparisons:
         samples:
             genotype: [ wt, stat3 ]
             treatment: dmso
-        design: ~ batch + genotype #TODO check
+        design: ~ batch + genotype
         extract: genotype_wt_vs_stat3
 
     WT DMSO vs RelB KO DMSO:
         samples:
             genotype: [ wt, relb ]
             treatment: dmso
-        design: ~ batch + genotype #TODO check
+        design: ~ batch + genotype
         extract: genotype_wt_vs_relb
 
-    WT DMSO vs WT IFNy:
+    WT DMSO vs WT IFNy: # ifna or ifng?; no anchors for batch2
         samples:
             genotype: wt
-            treatment: [ dmso, ifna ] #FIXME ifng?
-        design: ~ treatment #FIXME batch 2 not correctable
+            treatment: [ dmso, ifna ]
+        design: ~ batch + treatment
         extract: treatment_dmso_vs_ifna
 
-    WT DMSO vs cGasKO Stat1 KO: #?????? FIXME batch2, also: ifna or g?
+    WT DMSO vs cGasKO Stat1 KO:
         samples:
             genotype: [ wt, cgas+stat1 ]
             treatment: dmso
-        design: ~ genotype
+        design: ~ batch + genotype
         extract: genotype_wt_vs_cgas.stat1
 
     WT Reversine vs cGasKO STat1 KO Reversine:
         samples:
-            genotype: [ wt cgas+stat1 ] # cgas+stat1 = batch2 24h
+            genotype: [ wt, cgas+stat1 ]
             treatment: rev
         design: ~ batch + genotype
         extract: genotype_wt_vs_cgas.stat1
 
     cGAS KO reversine vs cGas ko STAT1KO Reversine:
         samples:
-            genotype: [ cgas cgas+stat1 ] # cgas+stat1 = batch2 24h
+            genotype: [ cgas, cgas+stat1 ]
             treatment: rev
         design: ~ genotype
         extract: genotype_cgas_vs_cgas.stat1
 
     cGASKO DMSO vs cGASKO Stat1KO DMSO:
         samples:
-            genotype: [ cgas cgas+stat1 ] # cgas+stat1 = batch2 24h
+            genotype: [ cgas, cgas+stat1 ]
             treatment: dmso
         design: ~ genotype
         extract: genotype_wt_vs_cgas.stat1

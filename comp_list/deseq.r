@@ -4,20 +4,48 @@ sys = import('sys')
 idmap = import('process/idmap')
 util = import('../rev_effect/util')
 
-deseq_one = function(rec, name=NULL) {
+batch_anchors = function(has_batch=TRUE) {
+    if (!has_batch)
+        return(tibble(sample_id="invalid", anchor=NA))
+    batch_anchors = c(
+        "SU_BT549_08_S15"=1, "SU_BT549_22_S29"=1, # batch 1, stat1+dmso
+        "SU_CH210215_17_S35"=1, # batch 4, stat1+dmso
+        "SU_CH210215_15_S33"=2, # batch 4, cgas+il6
+        "SU_cGAS_KO_IL6_1_S21"=2, "SU_cGAS_KO_IL6_2_S22"=2, # batch 3, cgas+il6
+        "SU_CH210215_13_S31"=3, # batch 4, wt+il6Ab
+        "SU_WT_anti_IL6_48h_S9"=3 # batch 3, wt+il16Ab
+    )
+    tibble(sample_id = names(batch_anchors),
+           anchor = factor(batch_anchors))
+}
+
+deseq_one = function(rec, name=NULL, contrast_only=FALSE) {
     message(name)
-    eset2 = eset
-    for (i in seq_along(rec$samples)) {
-        key = names(rec$samples)[i]
-        value = rec$samples[[i]]
-        eset2 = eset2[,colData(eset2)[[key]] %in% value]
-        colData(eset2)[[key]] = factor(colData(eset2)[[key]], levels=rev(value))
+    ba = batch_anchors(grepl("batch", rec$design))
+    keep = as.data.frame(rec$samples) %>% mutate(in_comparison=1) %>%
+        right_join(as.data.frame(colData(eset))) %>%
+        filter(!is.na(in_comparison) | sample_id %in% ba$sample_id) %>%
+        left_join(ba) %>%
+        mutate(anchor = factor(ifelse(is.na(anchor), "0", anchor)))
+    eset2 = eset[,keep$sample_id]
+    colData(eset2) = DataFrame(keep)
+
+    for (v in c("batch", "genotype", "treatment")) {
+        colData(eset2)[[v]] = droplevels(factor(colData(eset2)[[v]]))
+        if (v %in% names(rec$samples))
+            colData(eset2)[[v]] = relevel(colData(eset2)[[v]], rev(rec$samples[[v]])[1])
     }
-    design(eset2) = as.formula(rec$design)
+    for (v in c("genotype", "treatment")) {
+        colData(eset2)[[v]][is.na(eset2$in_comparison)] = levels(colData(eset2)[[v]])[1]
+        colData(eset2)[[v]] = droplevels(factor(colData(eset2)[[v]]))
+    }
+    design(eset2) = as.formula(sub("batch", "batch + anchor", rec$design, fixed=TRUE))
 
     mm = model.matrix(design(eset2), colData(eset2))
-    cmp = cbind(colData(eset2)[c("batch", "genotype", "treatment")], mm) %>%
+    cmp = cbind(keep[c("batch", "genotype", "treatment")], mm) %>%
         as.data.frame() %>% tibble::rownames_to_column("sample_id") %>% as_tibble()
+    if (contrast_only)
+        return(cmp)
 
     res = DESeq2::DESeq(eset2) %>%
         DESeq2::results(name=rec$extract) %>%
@@ -44,11 +72,7 @@ names(sets) = basename(tools::file_path_sans_ext(names(sets)))
 eset = readRDS(args$eset)
 eset = eset[, eset$time == "48"]
 eset$treatment = sub("none", "dmso", eset$treatment)
-eset$cond = sub("\\+?(rev|dmso)", "",
-                         paste(eset$genotype, eset$treatment, sep="+"))
-eset$cond = relevel(factor(eset$cond), "wt")
-eset$rev = ifelse(grepl("rev", eset$treatment), 1, 0)
-
+eset$treatment = relevel(factor(eset$treatment), "dmso")
 
 res = tibble(name=names(cfg), rec=unname(cfg)) %>%
     head(2) %>% #DEBUG
@@ -58,8 +82,6 @@ res = tibble(name=names(cfg), rec=unname(cfg)) %>%
                genes = list(res$genes)) %>%
     ungroup() %>%
     select(-res, -rec)
-
-
 
 
 
