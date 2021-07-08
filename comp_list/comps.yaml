@@ -63,21 +63,21 @@ comparisons:
         design: ~ batch + genotype
         extract: genotype_relb_vs_stat3
 
-    BT549 cGAS KO reversine vs BT549 cGAS KO reversine + ASKi: # aski or jnki?
+    BT549 cGAS KO reversine vs BT549 cGAS KO reversine + JNKi:
         samples:
             genotype: cgas
             treatment: [ rev, rev+jnk ]
         design: ~ batch + treatment
         extract: treatment_rev_vs_rev.jnk
 
-    BT549 cGAS KO reversine + ASKi vs BT549 WT reversine: # ask or jnk?
+    BT549 cGAS KO reversine + JNKi vs BT549 WT reversine:
         samples:
             genotype: [ cgas, wt ]
             treatment: [ rev+jnk, rev ]
         design: ~ batch + genotype
         extract: treatment_cgas_vs_wt
 
-    BT549 WT reversine vs BT549 WT reversine + ASKi: # ask or jnk?
+    BT549 WT reversine vs BT549 WT reversine + JNKi:
         samples:
             genotype: wt
             treatment: [ rev, rev+jnk ]
