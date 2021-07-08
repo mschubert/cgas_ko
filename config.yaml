@@ -7,7 +7,7 @@ rnaseq_exclude:
     SU_cGAS_KO_FT_rev_S26: "clone outlier"
 
 genesets:
-    - GO_Biological_Process_2020
+    - GO_Biological_Process_2021
     - MSigDB_Hallmark_2020
     - DoRothEA
     - CORUM
