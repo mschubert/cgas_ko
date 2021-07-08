@@ -26,17 +26,19 @@ plot_pca = function(eset, vst) {
                `cgas+stat1`="#cab2d6", `cgas+stat3`="#6a3d9a", relb="#b15928")
 
     ggplot(norev, aes(PC1, PC2)) +
-        geom_point(aes(shape=drug, fill=genotype), size=3, alpha=0.8) +
+        geom_point(aes(shape=drug, fill=genotype, size=time), alpha=0.8) +
         geom_segment(data=revs, aes(xend=revPC1, yend=revPC2, color=genotype),
                      arrow=arrow(length=unit(1,"mm"), type="closed"), alpha=0.8) +
-        geom_text(aes(label=time), size=1.5) +
+        geom_text(aes(label=batch), size=1.5) +
         xlab(paste0("PC1: ", pcavar[1], "% variance")) +
         ylab(paste0("PC2: ", pcavar[2], "% variance")) +
         coord_fixed() +
         scale_shape_manual(values=shapes) +
         scale_fill_manual(values=colors) +
         scale_color_manual(values=colors) +
-        guides(fill = guide_legend(override.aes=list(shape=21))) +
+        scale_size_manual(values=c("0"=2, "2"=2, "24"=3, "48"=5, "72"=7, "48FT"=7)) +
+        guides(fill = guide_legend(override.aes=list(shape=21, size=2)),
+               shape = guide_legend(override.aes=list(fill="grey", size=3))) +
         theme_classic()
 }
 
