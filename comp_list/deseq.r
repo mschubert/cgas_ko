@@ -36,6 +36,7 @@ deseq_one = function(rec, name=NULL, contrast_only=FALSE) {
             colData(eset2)[[v]] = relevel(colData(eset2)[[v]], rev(rec$samples[[v]])[1])
     }
     for (v in c("genotype", "treatment")) {
+        #TODO: if part of comparison, change all/nothing
         colData(eset2)[[v]][is.na(eset2$in_comparison)] = levels(colData(eset2)[[v]])[1]
         colData(eset2)[[v]] = droplevels(factor(colData(eset2)[[v]]))
     }
@@ -70,7 +71,7 @@ sets = sapply(args$setfiles, readRDS, simplify=FALSE)
 names(sets) = basename(tools::file_path_sans_ext(names(sets)))
 
 eset = readRDS(args$eset)
-eset = eset[, eset$time == "48"]
+eset = eset[, eset$time == "48" | eset$treatment == "ifng"]
 eset$treatment = sub("none", "dmso", eset$treatment)
 eset$treatment = relevel(factor(eset$treatment), "dmso")
 

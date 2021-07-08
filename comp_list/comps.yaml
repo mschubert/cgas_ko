@@ -162,12 +162,12 @@ comparisons:
         design: ~ batch + genotype
         extract: genotype_wt_vs_relb
 
-    WT DMSO vs WT IFNy: # ifna or ifng?; no anchors for batch2
+    WT DMSO vs WT IFNy:
         samples:
             genotype: wt
-            treatment: [ dmso, ifna ]
-        design: ~ batch + treatment
-        extract: treatment_dmso_vs_ifna
+            treatment: [ dmso, ifng ]
+        design: ~ treatment
+        extract: treatment_dmso_vs_ifng
 
     WT DMSO vs cGasKO Stat1 KO:
         samples:
