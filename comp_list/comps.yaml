@@ -13,12 +13,12 @@ comparisons:
         design: ~ genotype
         extract: genotype_cgas_vs_stat3
 
-#    BT549 cGAS KO reversine vs BT549 cGAS KO reversine:
-#        samples:
-#            genotype: cgas
-#            rev: [ 0, 1 ]
-#        design: ~ rev
-#        extract: rev
+    BT549 cGAS KO reversine vs BT549 cGAS STAT1 KO reversine:
+        samples:
+            genotype: [ cgas, cgas+stat1 ]
+            treatment: rev
+        design: ~ genotype
+        extract: genotype_cgas_vs_cgas.stat1
 
     BT549 cGAS KO STAT1 KO reversine vs BT549 WT reversine:
         samples:
