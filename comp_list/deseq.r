@@ -36,9 +36,10 @@ deseq_one = function(rec, name=NULL, contrast_only=FALSE) {
             colData(eset2)[[v]] = relevel(colData(eset2)[[v]], rev(rec$samples[[v]])[1])
     }
     for (v in c("genotype", "treatment")) {
-        #TODO: if part of comparison, change all/nothing
-        colData(eset2)[[v]][is.na(eset2$in_comparison)] = levels(colData(eset2)[[v]])[1]
-        colData(eset2)[[v]] = droplevels(factor(colData(eset2)[[v]]))
+        cur = colData(eset2)[[v]]
+        cmp_terms = unique(cur[!is.na(eset2$in_comparison)])
+        colData(eset2)[[v]][!cur %in% cmp_terms] = levels(cur)[1]
+        colData(eset2)[[v]] = droplevels(factor(cur))
     }
     design(eset2) = as.formula(sub("batch", "batch + anchor", rec$design, fixed=TRUE))
 
