@@ -6,6 +6,7 @@ PROJNAME=${PWD##*/}
 rsync -auvr $@ --include='*.pdf' \
     --exclude '.snakemake' \
     --exclude '.bam' \
+    --include '*.xlsx' \
     --include '*.RData' \
     --include '*.rds' \
     --include 'data/**.txt' \

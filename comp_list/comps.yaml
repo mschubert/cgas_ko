@@ -75,7 +75,7 @@ comparisons:
             genotype: [ cgas, wt ]
             treatment: [ rev+jnk, rev ]
         design: ~ batch + genotype
-        extract: treatment_cgas_vs_wt
+        extract: genotype_cgas_vs_wt
 
     BT549 WT reversine vs BT549 WT reversine + JNKi:
         samples:
@@ -87,9 +87,9 @@ comparisons:
     BT549 WT reversine vs BT549 WT reversine + tocilizumab:
         samples:
             genotype: wt
-            treatment: [ rev, rev+il6Ab ]
+            treatment: [ rev, il6Ab+rev ]
         design: ~ batch + treatment
-        extract: treatment_rev_vs_rev.il6Ab
+        extract: treatment_rev_vs_il6Ab.rev
 
     BT549 WT reversine + tocilizumab vs BT549 cGAS KO reversine:
         samples:
@@ -195,7 +195,7 @@ comparisons:
             genotype: [ cgas, cgas+stat1 ]
             treatment: dmso
         design: ~ genotype
-        extract: genotype_wt_vs_cgas.stat1
+        extract: genotype_cgas_vs_cgas.stat1
 
     WT IL6 DMSO to WT IL6 Reversine:
         samples:

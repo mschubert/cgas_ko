@@ -2,8 +2,8 @@ library(dplyr)
 library(DESeq2)
 sys = import('sys')
 
-batch_anchors = function(coldata_eset, rec) {
-    batches = left_join(as.data.frame(rec$samples), coldata_eset) %>%
+batch_anchors = function(eset, rec) {
+    batches = left_join(as.data.frame(rec$samples), as.data.frame(colData(eset))) %>%
         group_by(treatment, genotype) %>% summarize(b = list(c(batch)))
     needs_anchors = length(do.call(setdiff, batches$b)) != 0
     if (!needs_anchors)
@@ -22,7 +22,7 @@ batch_anchors = function(coldata_eset, rec) {
 }
 
 make_eset = function(rec) {
-    ba = batch_anchors(as.data.frame(colData(eset)), rec)
+    ba = batch_anchors(eset, rec)
     keep = as.data.frame(rec$samples) %>% mutate(in_comparison=1) %>%
         right_join(as.data.frame(colData(eset))) %>%
         filter(!is.na(in_comparison) | sample_id %in% ba$sample_id) %>%
