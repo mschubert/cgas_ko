@@ -33,10 +33,9 @@ make_eset = function(rec) {
             colData(eset2)[[v]] = relevel(colData(eset2)[[v]], rev(rec$samples[[v]])[1])
     }
     for (v in c("genotype", "treatment")) {
-        cur = colData(eset2)[[v]]
-        cmp_terms = unique(cur[!is.na(eset2$in_comparison)])
-        colData(eset2)[[v]][!cur %in% cmp_terms] = levels(cur)[1]
-        colData(eset2)[[v]] = droplevels(factor(cur))
+        # todo: if an anchor is in the comparison, remove the anchor column
+        colData(eset2)[[v]][is.na(eset2$in_comparison)] = levels(colData(eset2)[[v]])[1]
+        colData(eset2)[[v]] = droplevels(factor(colData(eset2)[[v]]))
     }
     design(eset2) = as.formula(sub("batch", "batch + anchor", rec$design, fixed=TRUE))
 
