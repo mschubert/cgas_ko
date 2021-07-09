@@ -1,0 +1,41 @@
+configfile: "comps.yaml"
+
+rule all:
+    input:
+        expand("cmp/{key}.pdf", key=config['comparisons'].keys())
+
+rule eset:
+    input:
+        rscript = "eset.r",
+        config = "comps.yaml",
+        infile = "../data/rnaseq.rds"
+    output:
+        outfile = "eset/{key}.rds"
+    shell:
+        "Rscript {input.rscript}"
+            " --config {input.config}"
+            " --key '{wildcards.key}'"
+            " --infile '{input.infile}'"
+            " --outfile '{output.outfile}'"
+
+rule de:
+    input:
+        rscript = "deseq+sets.r",
+        infile = "eset/{key}.rds"
+    output:
+        outfile = "cmp/{key}.xlsx"
+    shell:
+        "Rscript {input.rscript}"
+            " --infile '{input.infile}'"
+            " --outfile '{output.outfile}'"
+
+rule plot:
+    input:
+        rscript = "plot.r",
+        infile = "cmp/{key}.xlsx"
+    output:
+        plotfile = "cmp/{key}.pdf"
+    shell:
+        "Rscript {input.rscript}"
+            " --infile '{input.infile}'"
+            " --plotfile '{output.plotfile}'"

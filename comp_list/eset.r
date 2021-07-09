@@ -39,6 +39,13 @@ make_eset = function(rec) {
         colData(eset2)[[v]] = droplevels(factor(cur))
     }
     design(eset2) = as.formula(sub("batch", "batch + anchor", rec$design, fixed=TRUE))
+
+    mm = model.matrix(design(eset2), colData(eset2))
+    cmp = cbind(keep[c("batch", "genotype", "treatment")], mm) %>%
+        as.data.frame() %>% tibble::rownames_to_column("sample_id") %>% as_tibble()
+
+    attr(eset2, "extract") = rec$extract
+    attr(eset2, "cmp") = cmp
     eset2
 }
 
@@ -46,14 +53,14 @@ sys$run({
     args = sys$cmd$parse(
         opt('c', 'config', 'yaml', 'comps.yaml'),
         opt('k', 'key', 'key in yaml', 'BT549 WT reversine vs BT549 cGAS KO reversine'),
-        opt('e', 'eset', 'rds', '../data/rnaseq.rds'),
+        opt('i', 'infile', 'rds', '../data/rnaseq.rds'),
         opt('o', 'outfile', 'rds', 'deseq.rds')
     )
 
     cfg = yaml::read_yaml("comps.yaml")
     rec = cfg$comparisons[[args$key]]
 
-    eset = readRDS(args$eset)
+    eset = readRDS(args$infile)
     eset = eset[, eset$time == "48" | eset$treatment == "ifng"]
     eset$treatment = sub("none", "dmso", eset$treatment)
     eset$treatment = relevel(factor(eset$treatment), "dmso")
