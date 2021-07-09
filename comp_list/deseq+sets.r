@@ -35,5 +35,5 @@ sys$run({
     cmp = attr(eset, "cmp")
     res = c(res, list(cmp=cmp))
 
-    writexl::write.xlsx(res, path=args$outfile)
+    writexl::write_xlsx(res, path=args$outfile)
 })
