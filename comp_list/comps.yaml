@@ -278,5 +278,6 @@ comparisons:
         samples:
             genotype: [ wt, cgas ]
             treatment: il6
+            batch: "3"
         design: ~ genotype
         extract: genotype_wt_vs_cgas
