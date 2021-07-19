@@ -1,10 +1,10 @@
 comparisons:
-    BT549 WT reversine vs BT549 cGAS KO reversine:
+    BT549 cGAS KO reversine vs BT549 WT reversine:
         samples:
-            genotype: [ wt, cgas ]
+            genotype: [ cgas, wt ]
             treatment: rev
         design: ~ batch + genotype
-        extract: genotype_wt_vs_cgas
+        extract: genotype_cgas_vs_wt
 
     BT549 cGAS KO reversine vs BT549 STAT3 KO reversine:
         samples:
@@ -13,12 +13,12 @@ comparisons:
         design: ~ genotype
         extract: genotype_cgas_vs_stat3
 
-    BT549 cGAS KO reversine vs BT549 cGAS STAT1 KO reversine:
+    BT549 cGAS KO STAT1 KO reversine vs BT549 cGAS KO reversine:
         samples:
-            genotype: [ cgas, cgas+stat1 ]
+            genotype: [ cgas+stat1, cgas ]
             treatment: rev
         design: ~ genotype
-        extract: genotype_cgas_vs_cgas.stat1
+        extract: genotype_cgas.stat1_vs_cgas
 
     BT549 cGAS KO STAT1 KO reversine vs BT549 WT reversine:
         samples:
@@ -27,13 +27,13 @@ comparisons:
         design: ~ batch + genotype
         extract: genotype_cgas.stat1_vs_wt
 
-    BT549 cGAS KO reversine vs BT549 cGAS KO reversine + IL6:
+    BT549 cGAS KO reversine + IL6 vs BT549 cGAS KO reversine:
         samples:
             genotype: cgas
-            treatment: [ rev, rev+il6 ]
+            treatment: [ rev+il6, rev ]
             batch: "3"
         design: ~ treatment
-        extract: treatment_rev_vs_rev.il6
+        extract: treatment_rev.il6_vs_rev
 
     BT549 cGAS KO reversine + IL6 vs BT549 WT reversine:
         samples:
@@ -42,12 +42,12 @@ comparisons:
         design: ~ batch + treatment
         extract: treatment_rev.il6_vs_rev
 
-    BT549 WT reversine vs BT549 WT reversine + IL6:
+    BT549 WT reversine + IL6 vs BT549 WT reversine:
         samples:
             genotype: wt
-            treatment: [ rev, rev+il6 ]
+            treatment: [ rev+il6, rev ]
         design: ~ batch + treatment
-        extract: treatment_rev_vs_rev.il6
+        extract: treatment_rev.il6_vs_rev
 
     BT549 cGAS KO reversine vs BT549 RelB KO reversine:
         samples:
@@ -63,12 +63,12 @@ comparisons:
         design: ~ batch + genotype
         extract: genotype_relb_vs_stat3
 
-    BT549 cGAS KO reversine vs BT549 cGAS KO reversine + JNKi:
+    BT549 cGAS KO reversine + JNKi vs BT549 cGAS KO reversine:
         samples:
             genotype: cgas
-            treatment: [ rev, rev+jnk ]
+            treatment: [ rev+jnk, rev ]
         design: ~ batch + treatment
-        extract: treatment_rev_vs_rev.jnk
+        extract: treatment_rev.jnk_vs_rev
 
     BT549 cGAS KO reversine + JNKi vs BT549 WT reversine:
         samples:
@@ -77,19 +77,19 @@ comparisons:
         design: ~ batch + genotype
         extract: genotype_cgas_vs_wt
 
-    BT549 WT reversine vs BT549 WT reversine + JNKi:
+    BT549 WT reversine + JNKi vs BT549 WT reversine:
         samples:
             genotype: wt
-            treatment: [ rev, rev+jnk ]
+            treatment: [ rev+jnk, rev ]
         design: ~ batch + treatment
-        extract: treatment_rev_vs_rev.jnk
+        extract: treatment_rev.jnk_vs_rev
 
-    BT549 WT reversine vs BT549 WT reversine + tocilizumab:
+    BT549 WT reversine + tocilizumab vs BT549 WT reversine:
         samples:
             genotype: wt
-            treatment: [ rev, il6Ab+rev ]
+            treatment: [ il6Ab+rev, rev ]
         design: ~ batch + treatment
-        extract: treatment_rev_vs_il6Ab.rev
+        extract: treatment_il6Ab.rev_vs_rev
 
     BT549 WT reversine + tocilizumab vs BT549 cGAS KO reversine:
         samples:
@@ -98,108 +98,185 @@ comparisons:
         design: ~ batch + genotype
         extract: genotype_wt_vs_cgas
 
-    BT549 WT DMSO vs Reversine:
+    BT549 WT Reversine vs DMSO:
         samples:
             genotype: wt
-            treatment: [ dmso, rev ]
+            treatment: [ rev, dmso ]
         design: ~ treatment
-        extract: treatment_dmso_vs_rev
+        extract: treatment_rev_vs_dmso
 
-    BT549 cGAS KO DMSO vs Reversine:
+    BT549 cGAS KO Reversine vs DMSO:
         samples:
             genotype: cgas
-            treatment: [ dmso, rev ]
+            treatment: [ rev, dmso ]
         design: ~ treatment
-        extract: treatment_dmso_vs_rev
+        extract: treatment_rev_vs_dmso
 
-    BT549 cGAS STAT1 KO DMSO vs Reversine:
+    BT549 cGAS STAT1 KO Reversine vs DMSO:
         samples:
             genotype: stat1
-            treatment: [ dmso, rev ]
+            treatment: [ rev, dmso ]
         design: ~ batch + treatment
-        extract: treatment_dmso_vs_rev
+        extract: treatment_rev_vs_dmso
 
-    BT549 STAT3 KO DMSO vs Reversine:
+    BT549 STAT3 KO Reversine vs DMSO:
         samples:
             genotype: stat3
-            treatment: [ dmso, rev ]
+            treatment: [ rev, dmso ]
         design: ~ treatment
-        extract: treatment_dmso_vs_rev
+        extract: treatment_rev_vs_dmso
 
-    BT549 RelB KO DMSO vs Reversine:
+    BT549 RelB KO Reversine vs DMSO:
         samples:
             genotype: relb
-            treatment: [ dmso, rev ]
+            treatment: [ rev, dmso ]
         design: ~ treatment
-        extract: treatment_dmso_vs_rev
+        extract: treatment_rev_vs_dmso
 
-    WT DMSO vs cGAS KO DMSO:
+    cGAS KO DMSO vs WT DMSO:
         samples:
-            genotype: [ wt, cgas ]
+            genotype: [ cgas, wt ]
             treatment: dmso
         design: ~ batch + genotype
-        extract: genotype_wt_vs_cgas
+        extract: genotype_cgas_vs_wt
 
-    WT DMSO vs STAT1 KO DMSO:
+    STAT1 KO DMSO vs WT DMSO:
         samples:
-            genotype: [ wt, stat1 ]
+            genotype: [ stat1, wt ]
             treatment: dmso
             batch: "1"
         design: ~ genotype
-        extract: genotype_wt_vs_stat1
+        extract: genotype_stat1_vs_wt
 
-    WT DMSO vs STAT3 KO DMSO:
+    STAT3 KO DMSO vs WT DMSO:
         samples:
-            genotype: [ wt, stat3 ]
+            genotype: [ stat3, wt ]
             treatment: dmso
         design: ~ batch + genotype
-        extract: genotype_wt_vs_stat3
+        extract: genotype_stat3_vs_wt
 
-    WT DMSO vs RelB KO DMSO:
+    RelB KO DMSO vs WT DMSO:
         samples:
-            genotype: [ wt, relb ]
+            genotype: [ relb, wt ]
             treatment: dmso
         design: ~ batch + genotype
-        extract: genotype_wt_vs_relb
+        extract: genotype_relb_vs_wt
 
-    WT DMSO vs WT IFNy:
+    WT IFNy vs WT DMSO:
         samples:
             genotype: wt
-            treatment: [ dmso, ifng ]
+            treatment: [ ifng, dmso ]
         design: ~ treatment
-        extract: treatment_dmso_vs_ifng
+        extract: treatment_ifng_vs_dmso
 
-    WT DMSO vs cGasKO Stat1 KO:
+    cGAS STAT1 KO DMSO vs WT KO:
         samples:
-            genotype: [ wt, cgas+stat1 ]
+            genotype: [ cgas+stat1, wt ]
             treatment: dmso
         design: ~ batch + genotype
-        extract: genotype_wt_vs_cgas.stat1
+        extract: genotype_cgas.stat1_vs_wt
 
-    WT Reversine vs cGasKO STat1 KO Reversine:
+    cGasKO STat1 KO Reversine vs WT Reversine:
         samples:
-            genotype: [ wt, cgas+stat1 ]
+            genotype: [ cgas+stat1, wt ]
             treatment: rev
         design: ~ batch + genotype
-        extract: genotype_wt_vs_cgas.stat1
+        extract: genotype_cgas.stat1_vs_wt
 
-    cGAS KO reversine vs cGas ko STAT1KO Reversine:
+    cGas ko STAT1KO reversine vs cGas ko Reversine:
         samples:
-            genotype: [ cgas, cgas+stat1 ]
+            genotype: [ cgas+stat1, cgas ]
             treatment: rev
         design: ~ genotype
-        extract: genotype_cgas_vs_cgas.stat1
+        extract: genotype_cgas.stat1_vs_cgas
 
-    cGASKO DMSO vs cGASKO Stat1KO DMSO:
+    cGASKO Stat1KO DMSO vs cGASKO  DMSO:
         samples:
-            genotype: [ cgas, cgas+stat1 ]
+            genotype: [ cgas+stat1, cgas ]
             treatment: dmso
         design: ~ genotype
-        extract: genotype_cgas_vs_cgas.stat1
+        extract: genotype_cgas.stat1_vs_cgas
 
-    WT IL6 DMSO to WT IL6 Reversine:
+    WT IL6 Reversine to WT IL6 DMSO:
         samples:
             genotype: wt
-            treatment: [ il6, rev+il6 ]
+            treatment: [ rev+il6, il6 ]
         design: ~ treatment
-        extract: treatment_il6_vs_rev.il6
+        extract: treatment_rev.il6_vs_il6
+
+    STAT1 KO Reversine vs STAT1 KO DMSO:
+        samples:
+            genotype: stat1
+            treatment: [ rev, dmso ]
+        design: ~ treatment # batch?
+        extract: treatment_rev_vs_dmso
+
+    STAT3 KO Reversine vs WT Reversine:
+        samples:
+            genotype: [ stat3, wt ]
+            treatment: rev
+        design: ~ batch + genotype
+        extract: genotype_stat3_vs_wt
+
+    RelB KO Reversine vs WT Reversine:
+        samples:
+            genotype: [ relb, wt ]
+            treatment: rev
+        design: ~ batch + genotype
+        extract: genotype_relb_vs_wt
+
+    STAT1 KO Reversine vs WT Reversine:
+        samples:
+            genotype: [ stat1, wt ]
+            treatment: rev
+        design: ~ batch + genotype
+        extract: genotype_stat1_vs_wt
+
+    WT IL6 vs WT DMSO:
+        samples:
+            genotype: wt
+            treatment: [ il6, dmso ]
+        design: ~ batch + treatment
+        extract: treatment_il6_vs_dmso
+
+    cGAS KO IL6 vs cGAS KO DMSO:
+        samples:
+            genotype: cgas
+            treatment: [ il6, dmso ]
+        design: ~ treatment
+        extract: treatment_il6_vs_dmso
+
+    WT JNKi vs WT DMSO:
+        samples:
+            genotype: wt
+            treatment: [ jnk, dmso ]
+        design: ~ batch + treatment
+        extract: treatment_jnk_vs_dmso
+
+    cGAS KO JNKi vs cGAS KO DMSO:
+        samples:
+            genotype: cgas
+            treatment: [ jnk, dmso ]
+        design: ~ batch + treatment
+        extract: treatment_jnk_vs_dmso
+
+    WT tocilizumab vs WT DMSO:
+        samples:
+            genotype: wt
+            treatment: [ il6Ab, dmso ]
+        design: ~ batch + treatment
+        extract: treatment_il6Ab_vs_dmso
+
+    WT JNKi vs cGAS KO JNKi:
+        samples:
+            genotype: [ wt, cgas ]
+            treatment: jnk
+        design: ~ genotype
+        extract: genotype_wt_vs_cgas
+
+    WT IL6 vs cGAS KO IL6:
+        samples:
+            genotype: [ wt, cgas ]
+            treatment: il6
+        design: ~ genotype
+        extract: genotype_wt_vs_cgas
