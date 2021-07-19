@@ -33,7 +33,7 @@ compare = function(res, ref, cmp, col="genes", thresh=2, label_base=200, hl=c(),
                       c("down", "up", "opposite", "no change", "condition specific"))
 
     rdf = inner_join(refdf %>% transmute(label, !! sym$x := stat),
-                     cmpdf %>% transmute(label, !! sym$y := stat)) %>%
+                     cmpdf %>% transmute(label, !! sym$y := stat), na_matches="never") %>%
         filter((!! sym$x)^2 + (!! sym$y)^2 > thresh^2) %>%
         mutate(quad = factor(case_when(
                   abs(!! sym$x) > thresh*2 & abs(!! sym$y) < thresh ~ "condition specific",

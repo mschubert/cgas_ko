@@ -38,7 +38,8 @@ extract_result = function(res, rn) {
         as.data.frame() %>%
         as_data_frame(rownames="ensembl_gene_id") %>%
         arrange(padj) %>%
-        mutate(label = idmap$gene(ensembl_gene_id, to="hgnc_symbol")) %>%
+        mutate(label = idmap$gene(ensembl_gene_id, to="hgnc_symbol"),
+               label = ifelse(is.na(label), ensembl_gene_id, label)) %>%
         select(ensembl_gene_id, label, everything())
 }
 

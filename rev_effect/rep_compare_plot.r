@@ -49,6 +49,7 @@ sys$run({
     idx = bind_rows(res24[c("cond", "rep")], res48[c("cond", "rep")]) %>%
         distinct() %>%
         filter(rep != "1") %>%
+        arrange(cond, rep) %>%
         rowwise() %>%
         mutate(plot = list(do_compare(res24, res48, rep, cond)))
 
