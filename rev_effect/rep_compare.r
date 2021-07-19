@@ -10,7 +10,8 @@ test_rev = function(eset, cond) {
     design(eset2) = ~ replicate:rev
     res = DESeq(eset2)
     rns = grep("replicate.\\.rev", resultsNames(res), value=TRUE)
-    sapply(rns, util$extract_result, res=res, simplify=FALSE)
+    lapply(rns, util$extract_result, res=res) %>%
+        setNames(sub("replicate([0-9]+)\\.rev", "\\1", rns))
 }
 
 args = sys$cmd$parse(
