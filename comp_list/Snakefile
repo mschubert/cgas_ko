@@ -2,7 +2,8 @@ configfile: "comps.yaml"
 
 rule all:
     input:
-        expand("cmp/{key}.pdf", key=config['comparisons'].keys())
+        expand("cmp/{key}.pdf", key=config['comparisons'].keys()),
+        "summary.pdf"
 
 rule eset:
     input:
@@ -42,13 +43,15 @@ rule plot:
 
 rule summary:
     input:
-        rscript = "summary.r"
+        rscript = "summary.r",
         config = "comps.yaml",
-        infiles = expand("cmp/{key}.pdf", key=config['comparisons'].keys())
+        infiles = expand("cmp/{key}.xlsx", key=config['comparisons'].keys())
+    params:
+        qin = expand("'cmp/{key}.xlsx'", key=config['comparisons'].keys())
     output:
         plotfile = "summary.pdf"
     shell:
         "Rscript {input.rscript}"
             " --config {input.config}"
             " --plotfile {output.plotfile}"
-            " {input.infiles}"
+            " {params.qin}"

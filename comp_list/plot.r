@@ -10,7 +10,6 @@ args = sys$cmd$parse(
 
 sheets = readxl::excel_sheets(args$infile)
 res = sapply(sheets, readxl::read_xlsx, path=args$infile, simplify=FALSE)
-res$genes$baseMean = sqrt(res$genes$baseMean)
 
 pdf(12, 10, file=args$plotfile)
 for (i in seq_len(length(res)-1))
