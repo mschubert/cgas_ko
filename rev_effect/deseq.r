@@ -22,15 +22,20 @@ sets = sapply(args$setfiles, readRDS, simplify=FALSE)
 names(sets) = basename(tools::file_path_sans_ext(names(sets)))
 
 eset = readRDS(args$eset)
-eset = eset[, colData(eset)$time == args$time & colData(eset)$treatment != "ifna"]
-colData(eset)$treatment = sub("none", "dmso", colData(eset)$treatment)
-colData(eset)$cond = sub("\\+?(rev|dmso)", "",
-                         paste(colData(eset)$genotype, colData(eset)$treatment, sep="+"))
-colData(eset)$cond = relevel(factor(colData(eset)$cond), "wt")
-colData(eset)$rev = ifelse(grepl("rev", colData(eset)$treatment), 1, 0)
+eset = eset[, eset$time == args$time & eset$treatment != "ifna"]
+eset$treatment = sub("none", "dmso", eset$treatment)
+eset$cond = sub("\\+?(rev|dmso)", "", paste(eset$genotype, eset$treatment, sep="+"))
+eset$cond = relevel(factor(eset$cond), "wt")
+eset$rev = ifelse(grepl("rev", eset$treatment), 1, 0)
 
-cond = levels(eset$cond)
-cond = cond[table(eset$cond) == 4] # cgas[24h], il6Ab[48h] only one rep
+#cond = levels(eset$cond)
+#cond = cond[table(eset$cond) == 4] # cgas[24h], il6Ab[48h] only one rep
+
+cond = as.data.frame(colData(eset)) %>%
+    group_by(cond) %>%
+    filter(n_distinct(replicate) > 1) %>%
+    pull(cond) %>% unique()
+
 res = sapply(cond, test_rev, eset=eset, simplify=FALSE)
 res = tibble(cond = cond, genes = unname(res))
 
