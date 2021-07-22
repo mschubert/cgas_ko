@@ -49,7 +49,7 @@ show_lab = c(
     "E2F Targets", "G2-M Checkpoint", "Apoptosis", "Myc Targets V1", "UV Response Up",
     "Inflammatory Response", "KRAS Signaling Up", "IL-6/JAK/STAT3 Signaling",
     "Epithelial Mesenchymal Transition", "Allograft Rejection", "Complement", "Estrogen Response Late",
-    "STAT1", "RELA", "E2F4", "NFKB1", "STAT3", "JUN", "FOS", "CREB1"
+    "STAT1", "RELA", "E2F4", "NFKB1", "STAT3", "JUN", "FOS", "CREB1", "SPI1", "SP3"
 )
 sres2 = sres %>%
     select(cond, set, label, size, estimate, adj.p) %>%
