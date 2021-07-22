@@ -1,6 +1,6 @@
 library(dplyr)
 library(ggplot2)
-library(DEseq2)
+library(DESeq2)
 sys = import('sys')
 plt = import('plot')
 gset = import('genesets')
@@ -30,7 +30,7 @@ res = list(cgas_dep = DESeq2::results(mod, name="cgas_dep"),
 
 de_genes = list(cgas_dep = res$cgas_dep$ensembl_gene_id[res$cgas_dep$padj < 0.1],
                 cgas_indep = res$cgas_indep$ensembl_gene_id[res$cgas_indep$padj < 0.1])
-plt$venn(de_genes)
+#plt$venn(de_genes)
 
 snames = c("MSigDB_Hallmark_2020", "DoRothEA")
 sets = gset$get_human(snames, conf="A") %>%
@@ -69,11 +69,11 @@ ggplot(sres2, aes(x=estimate_cgas_dep, y=estimate_cgas_indep)) +
     ggrepel::geom_label_repel(aes(label=label), size=3, max.iter=1e5, label.size=NA,
         min.segment.length=0, max.overlaps=Inf, segment.alpha=0.3, fill="#ffffffc0",
         label.padding=unit(0.2, "lines")) +
-    geom_text(data=data.frame(x=0.5, y=0.5, txt="more cGas-independent ⇐    ⇒ more cGas-dependent  "),
-              aes(x=x, y=y, label=txt), inherit.aes=FALSE, size=3.5, fontface="bold") +
+    geom_text(data=data.frame(x=0.5, y=0.5, txt="more cGas-independent ⇖    ⇘ more cGas-dependent  "),
+              aes(x=x, y=y, label=txt), inherit.aes=FALSE, size=3.5, fontface="bold", color="#757575") +
     theme_classic() +
-    labs(x = "mean log2 FC cGas-dependent (wt rev)",
-         y = "mean log2 FC cGas-independent (cGas KO rev)",
+    labs(x = "log2 FC wt: rev vs. DMSO",
+         y = "log2 FC cGas KO: rev vs. DMSO",
          size = "Set genes",
          color = "Set type",
          alpha = "FDR")

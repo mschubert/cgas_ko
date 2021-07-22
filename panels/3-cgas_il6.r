@@ -11,7 +11,7 @@ args = sys$cmd$parse(
 )
 
 eset = readRDS(args$infile)
-eset = eset[, eset$genotype == "cgas" & batch == 3"" &
+eset = eset[, eset$genotype == "cgas" & eset$batch == "3" &
               eset$treatment %in% c("dmso", "rev", "rev+il6") & eset$time == "48"]
 
 eset$genotype = droplevels(eset$genotype)
@@ -53,7 +53,8 @@ sres2 = sres %>%
     mutate(#label = ifelse(label %in% show_lab, label, NA),
            min_p = apply(cbind(adj.p_with_il6, adj.p_without_il6), 1, function(x) min(x, na.rm=TRUE)),
            min_p = cut(min_p, breaks=c(0, 1e-10, 0.01, Inf), labels=c("<1e-10", "<0.01", "n.s.")),
-           label = ifelse(min_p != "n.s.", label, NA))
+           label = ifelse((min_p != "n.s." & ! label %in% c("Apical Junction", "Coagulation")) |
+                          label %in% c("STAT1", "STAT3", "MYC"), label, NA))
 
 cairo_pdf(args$plotfile, 9, 7)
 ggplot(sres2, aes(x=estimate_with_il6, y=estimate_without_il6)) +
@@ -66,11 +67,11 @@ ggplot(sres2, aes(x=estimate_with_il6, y=estimate_without_il6)) +
     ggrepel::geom_label_repel(aes(label=label), size=3, max.iter=1e5, label.size=NA,
         min.segment.length=0, max.overlaps=Inf, segment.alpha=0.3, fill="#ffffffc0",
         label.padding=unit(0.2, "lines")) +
-    geom_text(data=data.frame(x=0.005, y=0.005, txt="dampened with IL-6 ⇐    ⇒ increased with IL-6"),
-              aes(x=x, y=y, label=txt), inherit.aes=FALSE, size=3.5, fontface="bold") +
+    geom_text(data=data.frame(x=0.09, y=0.09, txt="dampened with IL-6 ⇖    ⇘ increased with IL-6"),
+              aes(x=x, y=y, label=txt), inherit.aes=FALSE, size=3.5, fontface="bold", color="#757575") +
     theme_classic() +
-    labs(x = "mean log2 FC IL-6 effect (cGas KO rev)",
-         y = "mean log2 FC no IL-6 (cGas KO rev)",
+    labs(x = "log2 FC cGas KO + IL6: rev vs. DMSO",
+         y = "log2 FC cGas KO: rev vs. DMSO ",
          size = "Set genes",
          color = "Set type",
          alpha = "FDR")
