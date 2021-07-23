@@ -18,6 +18,7 @@ plot_page = function(comparison, ...) {
 
 args = sys$cmd$parse(
     opt('c', 'config', 'yaml', 'comps.yaml'),
+    opt('o', 'outfile', 'rds', 'summary.rds'),
     opt('p', 'plotfile', 'pdf', 'summary.pdf'),
     arg('infiles', '', arity='*', list.files("cmp", "\\.xlsx$", full.names=TRUE))
 )
@@ -31,3 +32,5 @@ pdf(args$plotfile, 24, 9)
 for (i in seq_len(nrow(res)))
     plot(res$plot[[i]])
 dev.off()
+
+saveRDS(res %>% select(-plot), file=args$outfile)
