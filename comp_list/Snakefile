@@ -49,7 +49,7 @@ rule summary:
     params:
         qin = expand("'cmp/{key}.xlsx'", key=config['comparisons'].keys())
     output:
-        outfile = "summary.rds"
+        outfile = "summary.rds",
         plotfile = "summary.pdf"
     shell:
         "Rscript {input.rscript}"

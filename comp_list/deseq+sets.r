@@ -3,7 +3,6 @@ library(DESeq2)
 sys = import('sys')
 idmap = import('process/idmap')
 gset = import('genesets')
-util = import('../rev_effect/util')
 
 deseq_and_sets = function(eset, sets) {
     genes = DESeq2::DESeq(eset) %>%
@@ -14,7 +13,7 @@ deseq_and_sets = function(eset, sets) {
         select(ensembl_gene_id, label, everything()) %>%
         arrange(padj, pvalue)
 
-    sets = lapply(sets, util$test_gsets, res=genes)
+    sets = lapply(sets, gset$test_lm, genes=genes, add_means="log2FoldChange")
     c(list(genes=genes), sets)
 }
 
@@ -28,7 +27,8 @@ sys$run({
     sets = gset$get_human(c(
         "MSigDB_Hallmark_2020",
         "GO_Biological_Process_2021",
-        "KEGG_2021_Human"
+        "KEGG_2021_Human",
+        "CIN"
     ))
 
     res = deseq_and_sets(eset, sets)
