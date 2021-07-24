@@ -13,21 +13,22 @@ deseq_and_sets = function(eset, sets) {
         select(ensembl_gene_id, label, everything()) %>%
         arrange(padj, pvalue)
 
-    sets = lapply(sets, gset$test_lm, genes=genes, add_means="log2FoldChange")
-    c(list(genes=genes), sets)
+    sres = lapply(sets, function(s) gset$test_lm(genes, s, add_means="log2FoldChange"))
+    c(list(genes=genes), sres)
 }
 
 sys$run({
     args = sys$cmd$parse(
-        opt('i', 'infile', 'rds', 'eset/BT549 WT reversine vs BT549 cGAS KO reversine.rds'),
-        opt('o', 'outfile', 'xlsx', 'cmp/BT549 WT reversine vs BT549 cGAS KO reversine.xlsx')
+        opt('i', 'infile', 'rds', 'eset/BT549 cGAS KO Reversine vs DMSO.rds'),
+        opt('o', 'outfile', 'xlsx', 'cmp/BT549 cGAS KO Reversine vs DMSO.xlsx')
     )
 
     eset = readRDS(args$infile)
     sets = gset$get_human(c(
         "MSigDB_Hallmark_2020",
         "GO_Biological_Process_2021",
-        "KEGG_2021_Human",
+#        "KEGG_2021_Human",
+        "DoRothEA",
         "CIN"
     ))
 
