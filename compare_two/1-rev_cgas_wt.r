@@ -20,6 +20,11 @@ res = readRDS(args$infile) %>%
     filter(comparison %in% names(lookup)) %>%
     mutate(comparison = lookup[comparison])
 
+## purity adjustment (better to do it with genes?)
+#res$genes[[3]] = res$genes[[3]] %>%
+#    left_join(res$genes[[2]] %>% select(ensembl_gene_id, wt_lfc=log2FoldChange)) %>%
+#    mutate(log2FoldChange = log2FoldChange - (1-0.83) * wt_lfc)
+
 #de_genes = list(cgas_dep = res$cgas_dep$ensembl_gene_id[res$cgas_dep$padj < 0.1],
 #                cgas_indep = res$cgas_indep$ensembl_gene_id[res$cgas_indep$padj < 0.1])
 #plt$venn(de_genes)
@@ -31,6 +36,10 @@ cmp_sets = res %>%
 #    filter(collection != "DoRothEA" | size >= 50) %>%
     filter(size >= 50) %>%
     mutate(label = sub(" (a)", "", label, fixed=TRUE))
+cmp_sets = cmp_sets %>%
+    left_join(cmp_sets %>% filter(cond == "x") %>% select(label, wt_lfc=log2FoldChange)) %>%
+    mutate(log2FoldChange = ifelse(cond == "y", log2FoldChange - (1-0.83) * wt_lfc, log2FoldChange)) %>%
+    select(-wt_lfc)
 
 show_lab = c(
     "Interferon Gamma Response", "Interferon Alpha Response", "TNF-alpha Signaling via NF-kB",
