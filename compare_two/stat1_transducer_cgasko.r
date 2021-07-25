@@ -44,8 +44,8 @@ sres2 = cmp_sets %>%
     select(cond, collection, label, size, estimate) %>%
     tidyr::pivot_wider(names_from=c(cond), values_from=c(estimate)) %>%
     left_join(cmp_sets %>% filter(cond == "diff") %>% select(label, p.value, adj.p)) %>%
-    mutate(label = ifelse(adj.p < 0.01 | label %in% show_lab, label, NA),
-           min_p = cut(adj.p, breaks=c(0, 0.01, 0.2, Inf), labels=c("<0.01", "<0.2", "n.s.")))
+    mutate(label = ifelse(adj.p < 0.05 | label %in% show_lab, label, NA),
+           min_p = cut(adj.p, breaks=c(0, 0.05, 0.2, Inf), labels=c("<0.05", "<0.2", "n.s.")))
 
 arr = c("RELA", "NFKB1")
 arts = c("STAT1-independent", "STAT1-dependent")
@@ -61,7 +61,7 @@ ggplot(sres2, aes(x=x, y=y)) +
     geom_vline(xintercept=0, color="darkgrey", linetype="dotted") +
     geom_abline(slope=1, size=2, color="grey", linetype="dashed") +
     geom_point(aes(size=size, fill=collection, alpha=min_p), shape=21) +
-    scale_alpha_manual(values=c("<0.01"=0.9, "<0.2"=0.4, "n.s."=0.1)) +
+    scale_alpha_manual(values=c("<0.05"=0.9, "<0.2"=0.4, "n.s."=0.1)) +
     scale_size_area() +
     geom_segment(data=arrws, aes(x=from, xend=to, y=y, yend=y, color=set),
                  arrow = arrow(length = unit(0.01, "npc"), type="closed")) +
@@ -69,8 +69,8 @@ ggplot(sres2, aes(x=x, y=y)) +
     ggrepel::geom_label_repel(aes(label=label), size=3, max.iter=1e5, label.size=NA,
         min.segment.length=0, max.overlaps=Inf, segment.alpha=0.3, fill="#ffffffc0",
         label.padding=unit(0.2, "lines")) +
-    geom_text(data=data.frame(x=0.5, y=0.5, txt="more cGas-independent ⇖    ⇘ more cGas-dependent  "),
-              aes(x=x, y=y, label=txt), inherit.aes=FALSE, size=3.5, fontface="bold", color="#757575") +
+#    geom_text(data=data.frame(x=0.5, y=0.5, txt="more cGas-independent ⇖    ⇘ more cGas-dependent  "),
+#              aes(x=x, y=y, label=txt), inherit.aes=FALSE, size=3.5, fontface="bold", color="#757575") +
     theme_classic() +
     labs(x = ilook["x"],
          y = ilook["y"],
