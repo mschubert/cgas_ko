@@ -58,7 +58,7 @@ cairo_pdf(args$plotfile, 9, 7)
 ggplot(sres2, aes(x=x, y=y)) +
     geom_hline(yintercept=0, color="darkgrey", linetype="dotted") +
     geom_vline(xintercept=0, color="darkgrey", linetype="dotted") +
-    geom_abline(slope=1, size=2, color="grey", linetype="dashed") +
+    geom_abline(slope=c(1,0.83), size=2, color=c("grey90", "grey70"), linetype="dashed") +
     geom_point(aes(size=size, fill=collection, alpha=min_p), shape=21) +
     scale_alpha_manual(values=c("<1e-5"=0.9, "<0.05"=0.4, "n.s."=0.1)) +
     scale_size_area() +
