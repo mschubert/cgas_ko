@@ -71,8 +71,8 @@ ggplot(sres2, aes(x=x, y=y)) +
     geom_hline(yintercept=0, color="darkgrey", linetype="dotted") +
     geom_vline(xintercept=0, color="darkgrey", linetype="dotted") +
     geom_abline(slope=1, size=2, color="grey", linetype="dashed") +
-    geom_point(aes(size=size, fill=collection, alpha=min_p, shape=p_src)) +
-    scale_shape_manual(values=c("cGas-dependent"=21, "cGas-independent"=22)) +
+    geom_point(aes(size=size, fill=collection, alpha=min_p, shape=p_src), shape=21) +
+#    scale_shape_manual(values=c("cGas-dependent"=21, "cGas-independent"=22)) +
     scale_alpha_manual(values=c("<1e-15"=0.9, "<0.01"=0.3, "n.s."=0.1)) +
     scale_size_area() +
     geom_segment(data=arrws, aes(x=from, xend=to, y=y, yend=y, color=set),
