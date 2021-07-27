@@ -122,10 +122,8 @@ do_lrt = function(eset, fml, red) {
 }
 
 test_gset = function(res, set) {
-    if ("log2FoldChange" %in% colnames(res))
-        cur = res %>% mutate(stat = log2FoldChange / lfcSE)
-    else
-        cur = res %>% mutate(stat = statistic)
+    if (setdiff(c("stat", "statistic"), colnames(res)) == "statistic")
+        cur$stat = cur$statistic
     fdata = mutate(cur, in_set = label %in% set)
     mod = try(lm(stat ~ in_set, data=fdata))
     if (class(mod) == "try-error")
