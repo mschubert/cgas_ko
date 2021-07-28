@@ -38,12 +38,14 @@ cmp_sets = res %>%
     mutate(label = sub(" (a)", "", label, fixed=TRUE))
 cmp_sets = cmp_sets %>%
     left_join(cmp_sets %>% filter(cond == "x") %>% select(label, wt_lfc=log2FoldChange)) %>%
-    mutate(log2FoldChange = ifelse(cond == "y", log2FoldChange - (1-0.83) * wt_lfc, log2FoldChange)) %>%
+    mutate(log2FoldChange = ifelse(cond == "y",
+                log2FoldChange - (1-0.83) * (wt_lfc - log2FoldChange), log2FoldChange)) %>%
     select(-wt_lfc)
 
 show_lab = c(
     "Interferon Gamma Response", "Interferon Alpha Response", "TNF-alpha Signaling via NF-kB",
-    "E2F Targets", "G2-M Checkpoint", "Myc Targets V1",
+    "E2F Targets", "G2-M Checkpoint", "Myc Targets V1", "IL-6/JAK/STAT3 Signaling",
+    "Estrogen Response Late", "Estrogen Response Early", # highest on y
     "STAT1", "RELA", "E2F4", "NFKB1", "STAT3"
 )
 sres2 = cmp_sets %>%
