@@ -13,7 +13,9 @@ aneup = lapply(cohorts, tcga$aneuploidy) %>%
     bind_rows() %>%
     inner_join(expr)
 
+pdf("il6r-aneup.pdf")
 ggplot(aneup, aes(x=aneuploidy, y=IL6)) +
     geom_point() +
     geom_smooth(method="lm") +
     facet_wrap(~  cohort)
+dev.off()
