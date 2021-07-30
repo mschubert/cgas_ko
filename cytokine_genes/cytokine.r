@@ -18,7 +18,7 @@ eset = eset[,eset$genotype %in% c("wt", "cgas", "stat1", "stat3", "rela", "relb"
 wt_rev = readRDS("../comp_list/summary.rds") %>%
     filter(comparison == "BT549 WT Reversine vs DMSO") %>%
     pull(genes) %>% `[[`(1) %>%
-    filter(padj < 0.2)
+    filter(padj < 0.1)
 
 #go = gset$get_human("GO_Biological_Process_2021")
 dor = gset$get_human("DoRothEA")[c("STAT1 (a)", "STAT3 (a)", "RELA (a)", "NFKB1 (a)")]
@@ -33,17 +33,19 @@ hlg = c("IL6", "TRAF2", "TNFRSF10A", "FOS", "JUN", "IRF1", "OAS3", "FAS", "NFKB1
         "IL6ST", "CCND3", "HDAC7", "NFKBIA", "NFKBIA", "IFNAR1", "TRIM25", "TWIST1")
 
 
+design(eset) = ~1
 vs = assay(DESeq2::varianceStabilizingTransformation(eset))
 rownames(vs) = idmap$gene(rownames(vs), to="external_gene_name")
 colnames(vs) = paste(eset$batch, eset$genotype, eset$treatment, eset$replicate)
 
 genes = intersect(unique(unlist(dor), unlist(hm)), rownames(vs))
-vs = vs[intersect(genes, rownames(vs)),]
-#vs = vs[intersect(genes, wt_rev$label),] #%>% narray::map(along=2, scale)
-vs_scaled = vs %>% narray::map(along=2, scale)
-rownames(vs_scaled)[! rownames(vs_scaled) %in% hlg] = ""
+#vs = vs[intersect(rownames(vs), genes),]
+vs = vs[intersect(genes, wt_rev$label),]
+vs_scaled = vs %>% narray::map(along=2, scale) #%>% narray::map(along=1, scale)
+#rownames(vs_scaled)[! rownames(vs_scaled) %in% hlg] = ""
 
-pheatmap(t(vs_scaled))
+pheatmap(t(vs), main="48 h")
+pheatmap(t(vs_scaled), main="z-score genes WT DMSO>REV 48h FDR<0.05")
 
 
 
