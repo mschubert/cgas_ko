@@ -29,8 +29,20 @@ test_one = function(mat, mcol, dmat, dcol, quartile=FALSE) {
     }
 
     lm(dep ~ gene, data=dset) %>% broom::tidy() %>%
-        filter(term != "(Intercept)") %>%
+        filter(term == "gene") %>%
+        select(-term) %>%
         arrange(p.value)
+}
+
+do_test = function(mat, dmat, quartile=FALSE) {
+    dep_genes = c("CGAS", "IL6", "IL6R", "IL6ST", "RELB", "RELA")
+    tidyr::crossing(tibble(set=rownames(mat)), tibble(dep=dep_genes)) %>%
+        rowwise() %>%
+            mutate(res = list(test_one(mat, set, dmat, dep, quartile=quartile))) %>%
+        ungroup() %>%
+        tidyr::unnest() %>%
+        mutate(adj.p = p.adjust(p.value, method="fdr")) %>%
+        arrange(adj.p, p.value)
 }
 
 cin = function(meta, gex_mat) {
@@ -74,25 +86,20 @@ sys$run({
         left_join(aneup2)
 
     cin_mat = cin(meta, gex_mat)
-    hm_mat = GSVA::gsva(gex_mat, gset$get_human("MSigDB_Hallmark_2021"))
+    hm_mat = GSVA::gsva(gex_mat, gset$get_human("MSigDB_Hallmark_2020"))
 
     # tryouts
 #    scores = gex_mat[c("CGAS", "IL6", "IL6R", "IL6ST", "MAD2L1", "BUB1", "NFKB1", "RELA", "RELB"),]
 #    meta = meta %>% filter(primary_disease == "Breast Cancer")
 
-    res = tidyr::crossing(tibble(set=rownames(scores)), tibble(dep=c("CGAS", "IL6", "IL6R", "IL6ST", "RELB", "RELA"))) %>%
-        rowwise() %>%
-            mutate(res = list(test_one(scores, set, komat, dep, quartile=F))) %>%
-        ungroup() %>%
-        tidyr::unnest() %>%
-    filter(term == "gene") %>%
-        mutate(adj.p = p.adjust(p.value, method="fdr")) %>%
-        arrange(adj.p, p.value)
+    res1 = do_test(hm_mat, komat)
+    res2 = do_test(cin_mat, komat)
 
     # usable findings:
     #  NC NFkB reg pos more dependent on IL6ST pan-can 0.01 (0.1 pan-cov; reg 0.09 BRCA; reg pos 0.254 BRCA & 0.07 quartile)
     #    HET70 BRCA dep on RELB 0.03 (quartile 0.04); pancan on RELA (0.007) CGAS (0.02)
     #  BRCA IL6R expr dep on CGAS 0.052 (IL6ST 0.3) quartile: 0.07/0.07
+    #  pancan Ploidy<RELB 0.03, AneupS<RELB 0.04
 
     ggplot(df, aes(x=rna_expression, y=dependency)) +
         geom_point(aes(size=`Aneuploidy score`, color=lineage_sub_subtype)) +
