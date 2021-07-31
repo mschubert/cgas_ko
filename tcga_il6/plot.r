@@ -11,9 +11,9 @@ args = sys$cmd$parse(
 res = readRDS(args$infile) %>%
     split(.$dep)
 
-plots = lapply(res, plt$volcano)
+plots = lapply(res, plt$volcano, y="p.value")
 
-pdf(args$plotfile)
+pdf(args$plotfile, 10, 8)
 for (i in seq_along(plots))
     print(plots[[i]] + ggtitle(names(plots)[i]))
 dev.off()

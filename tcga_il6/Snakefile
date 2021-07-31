@@ -1,7 +1,7 @@
 rule all:
     input:
         expand("cgasdep/{gset}/{tissue}-{dep}.pdf",
-                gset = ["CIN", "MSigDB_Hallmark_2020"],
+                gset = ["genes", "CIN", "MSigDB_Hallmark_2020", "GO_Biological_Process_2021", "DoRothEA"],
                 tissue = ["pan", "BRCA"],
                 dep = ["rnai", "ko"])
 

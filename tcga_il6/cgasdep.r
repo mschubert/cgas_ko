@@ -85,11 +85,11 @@ sys$run({
         gex_mat = gex_mat[,colnames(gex_mat) %in% brca_lines]
     }
 
-    if (args$set == "CIN") {
-        smat = cin(meta, gex_mat)
-    } else {
-        smat = GSVA::gsva(gex_mat, gset$get_human(args$set))
-    }
+    smat = switch(args$set,
+        genes = gex_mat,
+        CIN = cin(meta, gex_mat),
+        GSVA::gsva(gex_mat, gset$get_human(args$set))
+    )
 
     res = do_test(smat, dmat)
     saveRDS(res, file=args$outfile)
