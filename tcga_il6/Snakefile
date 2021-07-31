@@ -1,0 +1,29 @@
+rule all:
+    input:
+        expand("cgasdep/{gset}/{tissue}-{dep}.pdf",
+                gset = ["CIN", "MSigDB_Hallmark_2020"],
+                tissue = ["pan", "BRCA"],
+                dep = ["rnai", "ko"])
+
+rule plot:
+    input:
+        rscript = "plot.r",
+        infile = "{path}.rds"
+    output:
+        plotfile =  "{path}.pdf"
+    shell:
+        "Rscript {input.rscript}"
+            " --infile {input.infile}"
+            " --plotfile {output.plotfile}"
+
+rule cgasdep:
+    input:
+        rscript = "cgasdep.r"
+    output:
+        outfile = "cgasdep/{gset}/{tissue}-{dep}.rds"
+    shell:
+        "Rscript {input.rscript}"
+            " --tissue {wildcards.tissue}"
+            " --dep {wildcards.dep}"
+            " --set {wildcards.gset}"
+            " --outfile {output.outfile}"

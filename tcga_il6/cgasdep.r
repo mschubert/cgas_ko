@@ -2,10 +2,11 @@ library(dplyr)
 library(ggplot2)
 library(depmap)
 library("ExperimentHub")
+sys = import('sys')
 gset = import('genesets')
 seq = import('seq')
 
-long2wide = function(meta, df, field) {
+long2wide = function(df, field, meta) {
     wide = df %>%
         group_by(cell_line, gene_name) %>%
             summarize(value = mean(!! rlang::sym(field))) %>%
@@ -35,7 +36,8 @@ test_one = function(mat, mcol, dmat, dcol, quartile=FALSE) {
 }
 
 do_test = function(mat, dmat, quartile=FALSE) {
-    dep_genes = c("CGAS", "IL6", "IL6R", "IL6ST", "RELB", "RELA")
+    dep_genes = c("CGAS", "MB21D1", "IL6", "IL6R", "IL6ST", "RELB", "RELA") %>%
+        intersect(rownames(dmat))
     tidyr::crossing(tibble(set=rownames(mat)), tibble(dep=dep_genes)) %>%
         rowwise() %>%
             mutate(res = list(test_one(mat, set, dmat, dep, quartile=quartile))) %>%
@@ -65,43 +67,36 @@ cin = function(meta, gex_mat) {
 }
 
 sys$run({
-    eh = ExperimentHub()
-    query(eh, "depmap")
+    args = sys$cmd$parse(
+        opt('t', 'tissue', 'pan|BRCA', 'BRCA'),
+        opt('d', 'dep', 'rnai|ko', 'ko'),
+        opt('s', 'set', 'gene set identifier', 'CIN'),
+        opt('o', 'outfile', 'rds', 'cgasdep/MSigDB_Hallmark_2020/BRCA-ko.rds')
+    )
 
-    rnai = depmap::depmap_rnai()
-    ko = depmap::depmap_crispr()
-    gex = depmap::depmap_TPM()
-
-    hms = gset$get_human("CIN")
-    gex_mat = long2wide(gex, "rna_expression")
-    scores = GSVA::gsva(gex_mat, hms) #, parallel.sz=30)
-
-    rnaimat = long2wide(rnai, "dependency")
-    komat = long2wide(ko, "dependency")
-
+    meta = depmap::depmap_metadata()
+    dmat = switch(args$dep, rnai=depmap::depmap_rnai(), ko=depmap::depmap_crispr()) %>%
+        long2wide("dependency", meta)
+    gex_mat = depmap::depmap_TPM() %>% long2wide("rna_expression", meta)
     # RPPA: STAT3_pY705 STAT3_Caution NF-kB-p65_pS536_Caution
 
-    meta = depmap::depmap_metadata() %>%
-        left_join(aneup) %>%
-        left_join(aneup2)
+    if (args$tissue == "BRCA") {
+        brca_lines = meta %>% filter(primary_disease == "Breast Cancer") %>% pull(cell_line)
+        gex_mat = gex_mat[,colnames(gex_mat) %in% brca_lines]
+    }
 
-    cin_mat = cin(meta, gex_mat)
-    hm_mat = GSVA::gsva(gex_mat, gset$get_human("MSigDB_Hallmark_2020"))
+    if (args$set == "CIN") {
+        smat = cin(meta, gex_mat)
+    } else {
+        smat = GSVA::gsva(gex_mat, gset$get_human(args$set))
+    }
 
-    # tryouts
-#    scores = gex_mat[c("CGAS", "IL6", "IL6R", "IL6ST", "MAD2L1", "BUB1", "NFKB1", "RELA", "RELB"),]
-#    meta = meta %>% filter(primary_disease == "Breast Cancer")
-
-    res1 = do_test(hm_mat, komat)
-    res2 = do_test(cin_mat, komat)
+    res = do_test(smat, dmat)
+    saveRDS(res, file=args$outfile)
 
     # usable findings:
     #  NC NFkB reg pos more dependent on IL6ST pan-can 0.01 (0.1 pan-cov; reg 0.09 BRCA; reg pos 0.254 BRCA & 0.07 quartile)
     #    HET70 BRCA dep on RELB 0.03 (quartile 0.04); pancan on RELA (0.007) CGAS (0.02)
     #  BRCA IL6R expr dep on CGAS 0.052 (IL6ST 0.3) quartile: 0.07/0.07
     #  pancan Ploidy<RELB 0.03, AneupS<RELB 0.04
-
-    ggplot(df, aes(x=rna_expression, y=dependency)) +
-        geom_point(aes(size=`Aneuploidy score`, color=lineage_sub_subtype)) +
-        ggrepel::geom_text_repel(aes(label=cell_line), size=3)
 })
