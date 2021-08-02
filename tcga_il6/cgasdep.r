@@ -17,30 +17,29 @@ long2wide = function(df, field, meta) {
     mat
 }
 
-test_one = function(mat, mcol, dmat, dcol, quartile=FALSE) {
-    dset = meta %>%
-        inner_join(tibble(cell_line=colnames(mat), gene=mat[mcol,])) %>%
-        inner_join(tibble(cell_line=colnames(dmat), dep=dmat[dcol,]))
+do_test = function(meta, mat, dmat, mgenes=rownames(mat), dgenes=rownames(dmat), quartile=FALSE) {
+    test_one = function(mcol, dcol) {
+        dset = meta %>%
+            inner_join(tibble(cell_line=colnames(mat), x=mat[mcol,])) %>%
+            inner_join(tibble(cell_line=colnames(dmat), y=dmat[dcol,]))
 
-    if (quartile) {
-        val = rep(NA, nrow(dset))
-        val[dset$gene < quantile(dset$gene, 0.25)] = 0
-        val[dset$gene > quantile(dset$gene, 0.75)] = 1
-        dset$gene = val
+        if (quartile) {
+            val = rep(NA, nrow(dset))
+            val[dset$x < quantile(dset$x, 0.25)] = 0
+            val[dset$x > quantile(dset$x, 0.75)] = 1
+            dset$x = val
+        }
+
+        lm(y ~ x, data=dset) %>% broom::tidy() %>%
+            filter(term == "x") %>%
+            select(-term)
     }
 
-    lm(dep ~ gene, data=dset) %>% broom::tidy() %>%
-        filter(term == "gene") %>%
-        select(-term) %>%
-        arrange(p.value)
-}
-
-do_test = function(mat, dmat, quartile=FALSE) {
-    dep_genes = c("CGAS", "MB21D1", "IL6", "IL6R", "IL6ST", "RELB", "RELA") %>%
-        intersect(rownames(dmat))
-    tidyr::crossing(tibble(set=rownames(mat)), tibble(dep=dep_genes)) %>%
+    mcols = intersect(mgenes, rownames(mat))
+    dcols = intersect(dgenes, rownames(dmat))
+    tidyr::crossing(tibble(mcol=mcols), tibble(dcol=dcols)) %>%
         rowwise() %>%
-            mutate(res = list(test_one(mat, set, dmat, dep, quartile=quartile))) %>%
+            mutate(res = list(test_one(mcol, dcol))) %>%
         ungroup() %>%
         tidyr::unnest() %>%
         mutate(adj.p = p.adjust(p.value, method="fdr")) %>%
@@ -91,7 +90,9 @@ sys$run({
         GSVA::gsva(gex_mat, gset$get_human(args$set))
     )
 
-    res = do_test(smat, dmat)
+    dep_genes = c("CGAS", "MB21D1", "IL6", "IL6R", "IL6ST", "RELB", "RELA")
+
+    res = do_test(meta, smat, dmat, dgenes=dep_genes)
     saveRDS(res, file=args$outfile)
 
     # usable findings:
