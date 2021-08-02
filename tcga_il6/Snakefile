@@ -1,6 +1,7 @@
 rule all:
     input:
-        expand("cgasdep/{gset}/{tissue}-{dep}.pdf",
+        expand("{rscript}/{gset}/{tissue}-{dep}.pdf",
+                rscript = ["cgasexp", "cgasdep"],
                 gset = ["genes", "CIN", "MSigDB_Hallmark_2020", "GO_Biological_Process_2021", "DoRothEA"],
                 tissue = ["pan", "BRCA"],
                 dep = ["rnai", "ko"])
@@ -18,9 +19,9 @@ rule plot:
 
 rule cgasdep:
     input:
-        rscript = "cgasdep.r"
+        rscript = "cgas{type}.r"
     output:
-        outfile = "cgasdep/{gset}/{tissue}-{dep}.rds"
+        outfile = "cgas{type}/{gset}/{tissue}-{dep}.rds"
     shell:
         "Rscript {input.rscript}"
             " --tissue {wildcards.tissue}"

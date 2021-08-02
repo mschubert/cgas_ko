@@ -9,9 +9,9 @@ args = sys$cmd$parse(
 )
 
 res = readRDS(args$infile) %>%
-    split(.$dep)
+    split(.$dcol)
 
-plots = lapply(res, plt$volcano, y="p.value")
+plots = lapply(res, plt$volcano, y="p.value", label="mcol")
 
 pdf(args$plotfile, 10, 8)
 for (i in seq_along(plots))
