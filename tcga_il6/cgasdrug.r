@@ -30,6 +30,6 @@ sys$run({
         GSVA::gsva(gex_mat, gset$get_human(args$set))
     )
 
-    res = util$do_test(meta, dresp, smat)
+    res = util$do_test(meta, dmat, smat)
     saveRDS(res, file=args$outfile)
 })

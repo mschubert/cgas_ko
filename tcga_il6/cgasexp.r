@@ -31,6 +31,6 @@ sys$run({
 
     dep_genes = c("CGAS", "MB21D1", "IL6", "IL6R", "IL6ST", "RELB", "RELA")
 
-    res = util$do_test(meta, smat, gex_mat, mgenes=dep_genes)
+    res = util$do_test(meta, smat, gex_mat, dgenes=dep_genes)
     saveRDS(res, file=args$outfile)
 })
