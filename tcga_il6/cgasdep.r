@@ -19,9 +19,10 @@ long2wide = function(df, field, meta) {
 
 do_test = function(meta, mat, dmat, mgenes=rownames(mat), dgenes=rownames(dmat), quartile=FALSE) {
     test_one = function(mcol, dcol) {
+        message(mcol, " x ", dcol)
         dset = meta %>%
-            inner_join(tibble(cell_line=colnames(mat), x=mat[mcol,])) %>%
-            inner_join(tibble(cell_line=colnames(dmat), y=dmat[dcol,]))
+            inner_join(tibble(cell_line=colnames(mat), x=mat[mcol,]), by="cell_line") %>%
+            inner_join(tibble(cell_line=colnames(dmat), y=dmat[dcol,]), by="cell_line")
 
         if (quartile) {
             val = rep(NA, nrow(dset))
@@ -30,9 +31,14 @@ do_test = function(meta, mat, dmat, mgenes=rownames(mat), dgenes=rownames(dmat),
             dset$x = val
         }
 
-        lm(y ~ x, data=dset) %>% broom::tidy() %>%
-            filter(term == "x") %>%
-            select(-term)
+        tryCatch({
+            lm(y ~ x, data=dset) %>% broom::tidy() %>%
+                filter(term == "x") %>%
+                select(-term)
+        }, error = function(e) {
+            message("*** ERROR ***")
+            data.frame(estimate=NA)
+        })
     }
 
     mcols = intersect(mgenes, rownames(mat))
