@@ -34,6 +34,7 @@ sys$run({
         GSVA::gsva(gex_mat, gset$get_human(args$set))
     )
 
-    res = util$do_test(meta, dmat, smat)
+    res = util$do_test(meta, dmat, smat) %>%
+        dplyr::rename(mcol=dcol, dcol=mcol)
     saveRDS(res, file=args$outfile)
 })
