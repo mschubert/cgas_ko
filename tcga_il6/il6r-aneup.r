@@ -1,5 +1,6 @@
 library(dplyr)
 library(ggplot2)
+library(patchwork)
 tcga = import('data/tcga')
 gset = import('genesets')
 idmap = import('process/idmap')
@@ -80,29 +81,37 @@ scatter_with_correction = function(df, x, ys, cor) {
         df$cor = df[[y]] - predict(m, newdata=df[cor])
 
         df %>%
-            select(!!! rlang::syms(c(x, naive=y, cor, corrected="cor"))) %>%
-            tidyr::gather("type", "expression", -estimate, -rlang::sym(x)) %>%
+            select(Sample, !!! rlang::syms(c(x, naive=y, cor, corrected="cor"))) %>%
+            tidyr::gather("type", "expression", -estimate, -rlang::sym(x), -Sample) %>%
             mutate(type = factor(type, levels=c("naive", "corrected")))
     }
 
-    comb = sapply(ys, df_one_y, simplify=FALSE) %>% dplyr::bind_rows(.id="gene")
+    comb = sapply(ys, df_one_y, simplify=FALSE) %>% dplyr::bind_rows(.id="gene") %>%
+        left_join(brca %>% select(Sample, HER2, ER_PR) %>% distinct())
     comb$gene = factor(comb$gene, levels=ys)
 
     ggplot(comb, aes(x=!! rlang::sym(x), y=!! rlang::sym("expression"))) +
-        geom_point(shape=21, fill="black", alpha=0.2) +
+        geom_point(aes(shape=factor(HER2), fill=factor(ER_PR)), alpha=0.1) +
         geom_smooth(method="lm", se=FALSE) +
+        ggpmisc::stat_fit_glance(method="lm", geom="text_npc", size=3, label.x=0.15,
+                                 aes(label = paste("p", signif(..p.value.., digits = 2)))) +
+        scale_shape_manual(values=c("0"=21, "1"=24), na.value=22) +
+        scale_fill_manual(values=c("0"="red", "1"="blue"), na.value="black") +
+        guides(shape = guide_legend("HER2 amp", override.aes = list(size=2, alpha=0.5)),
+               fill = guide_legend("ER/PR status", override.aes = list(size=2, alpha=0.5, shape=21))) +
         theme_classic() +
         facet_grid(gene ~ type, scales="free", switch="y")
 }
 
-scatter_with_correction(brca, "CGAS", c("aneuploidy", "CIN70_Carter2006"), "estimate") +
+p11 = scatter_with_correction(brca, "CGAS", c("aneuploidy", "CIN70_Carter2006"), "estimate") +
     ggtitle("CIN/Aneuploidy with CGAS")
-scatter_with_correction(brca, "CGAS", c("IL6", "IL6R"), "estimate") +
+p12 = scatter_with_correction(brca, "CGAS", c("IL6", "IL6R"), "estimate") +
     ggtitle("IL6/IL6R with CGAS")
-scatter_with_correction(brca, "Interferon Gamma Response", c("CGAS", "IL6", "IL6R"), "estimate") +
-    ggtitle("Interferon Gamma Reponse")
-scatter_with_correction(brca, "IL-6/JAK/STAT3 Signaling", c("CGAS", "IL6", "IL6R"), "estimate") +
+p21 = scatter_with_correction(brca, "Interferon Gamma Response", c("CGAS", "IL6", "IL6R"), "estimate") +
+    ggtitle("Interferon Reponse")
+p22 = scatter_with_correction(brca, "IL-6/JAK/STAT3 Signaling", c("CGAS", "IL6", "IL6R"), "estimate") +
     ggtitle("IL6-STAT3 axis")
+(p11 | p12) / (p21 | p22) + plot_layout(heights=c(2,3), guides="collect")
 
 brca = aneup %>% filter(cohort == "BRCA") %>%
     mutate(cgas_quart = cut(CGAS, breaks=quantile(CGAS, c(0,0.25,0.75,1)), labels=c("low", NA, "high")))
