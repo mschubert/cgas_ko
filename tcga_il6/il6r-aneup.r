@@ -88,7 +88,7 @@ scatter_with_correction = function(df, x, ys, cor) {
     comb = sapply(ys, df_one_y, simplify=FALSE) %>% dplyr::bind_rows(.id="gene")
     comb$gene = factor(comb$gene, levels=ys)
 
-    ggplot(comb, aes_string(x=x, y="expression")) +
+    ggplot(comb, aes(x=!! rlang::sym(x), y=!! rlang::sym("expression"))) +
         geom_point(shape=21, fill="black", alpha=0.2) +
         geom_smooth(method="lm", se=FALSE) +
         theme_classic() +
