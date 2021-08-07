@@ -73,6 +73,37 @@ aneup = lapply(cohorts, tcga$aneuploidy) %>%
     left_join(scores) %>%
     mutate(aneuploidy = aneup_log2seg / estimate) # cancer aneup - stroma
 
+scatter_with_correction = function(df, x, ys, cor) {
+    df_one_y = function(y) {
+        m = lm(as.formula(paste(y, "~", cor)), data=df)
+        broom::tidy(m)
+        df$cor = df[[y]] - predict(m, newdata=df[cor])
+
+        df %>%
+            select(!!! rlang::syms(c(x, naive=y, cor, corrected="cor"))) %>%
+            tidyr::gather("type", "expression", -estimate, -rlang::sym(x)) %>%
+            mutate(type = factor(type, levels=c("naive", "corrected")))
+    }
+
+    comb = sapply(ys, df_one_y, simplify=FALSE) %>% dplyr::bind_rows(.id="gene")
+    comb$gene = factor(comb$gene, levels=ys)
+
+    ggplot(comb, aes_string(x=x, y="expression")) +
+        geom_point(shape=21, fill="black", alpha=0.2) +
+        geom_smooth(method="lm", se=FALSE) +
+        theme_classic() +
+        facet_grid(gene ~ type, scales="free", switch="y")
+}
+
+scatter_with_correction(brca, "CGAS", c("aneuploidy", "CIN70_Carter2006"), "estimate") +
+    ggtitle("CIN/Aneuploidy with CGAS")
+scatter_with_correction(brca, "CGAS", c("IL6", "IL6R"), "estimate") +
+    ggtitle("IL6/IL6R with CGAS")
+scatter_with_correction(brca, "Interferon Gamma Response", c("CGAS", "IL6", "IL6R"), "estimate") +
+    ggtitle("Interferon Gamma Reponse")
+scatter_with_correction(brca, "IL-6/JAK/STAT3 Signaling", c("CGAS", "IL6", "IL6R"), "estimate") +
+    ggtitle("IL6-STAT3 axis")
+
 brca = aneup %>% filter(cohort == "BRCA") %>%
     mutate(cgas_quart = cut(CGAS, breaks=quantile(CGAS, c(0,0.25,0.75,1)), labels=c("low", NA, "high")))
 coad = aneup %>% filter(cohort == "COAD")
