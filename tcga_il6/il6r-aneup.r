@@ -1,6 +1,8 @@
 library(dplyr)
 library(ggplot2)
 tcga = import('data/tcga')
+gset = import('genesets')
+idmap = import('process/idmap')
 
 load_expr = function(x) {
     ensg = c("ENSG00000160712", "ENSG00000136244", "ENSG00000134352", "ENSG00000164430")
@@ -11,14 +13,24 @@ load_expr = function(x) {
 
 #todo: er/pr/her2 status? (@brca only script)
 
+brca_gsva = function() {
+    gex = tcga$rna_seq("BRCA", trans="vst")
+    rownames(gex) = idmap$gene(rownames(gex), to="hgnc_symbol")
+    sets = gset$get_human(c("MSigDB_Hallmark_2020", "CIN")) %>% unname() %>% do.call(c, .)
+    t(GSVA::gsva(gex, sets))
+}
+scores = brca_gsva() %>%
+    as.data.frame() %>%
+    tibble::rownames_to_column("Sample") %>%
+    as_tibble() %>%
+    mutate(Sample = gsub(".", "-", Sample, fixed=TRUE))
+
 load_thorsson = function() {
     immune_df = tcga$immune() %>%
         filter(cohort %in% cohorts) %>%
+        mutate(Sample = paste0(barcode, "-01A")) %>%
 #        select(-cohort, -OS, -`OS Time`, -PFI, -`PFI Time`) %>%
         as.data.frame()
-#    immune = immune_df[-1]
-#    rownames(immune) = paste0(immune_df$barcode, "-01A")
-#    colnames(immune) = make.names(colnames(immune))
     immune_df
 }
 
@@ -51,25 +63,55 @@ brca_meta = function() {
 cohorts = c("BRCA", "LUAD", "COAD", "OV")
 expr = sapply(cohorts, load_expr, simplify=FALSE) %>% bind_rows(.id="cohort")
 pur = tcga$purity()
-#pur = tcga$purity_estimate()
+immune = load_thorsson()
 aneup = lapply(cohorts, tcga$aneuploidy) %>%
     bind_rows() %>%
     inner_join(expr) %>%
     inner_join(pur) %>%
     left_join(brca_meta()) %>%
+    left_join(immune %>% select(Sample, `Immune Subtype`)) %>%
+    left_join(scores) %>%
     mutate(aneuploidy = aneup_log2seg / estimate) # cancer aneup - stroma
-immune = load_thorsson()
-#TODO: add different measures of aneup, cor with IL6/R/ST,CGAS
 
-brca = aneup %>% filter(cohort == "BRCA")
+brca = aneup %>% filter(cohort == "BRCA") %>%
+    mutate(cgas_quart = cut(CGAS, breaks=quantile(CGAS, c(0,0.25,0.75,1)), labels=c("low", NA, "high")))
+coad = aneup %>% filter(cohort == "COAD")
 lm(IL6 ~ estimate + aneuploidy, data=brca) %>% broom::tidy()
 lm(IL6 ~ estimate * aneuploidy, data=brca) %>% broom::tidy()
+lm(IL6 ~ cgas_quart, data=brca) %>% broom::tidy()
+lm(IL6 ~ CGAS, data=brca) %>% broom::tidy()
+lm(IL6 ~ estimate + CGAS, data=brca) %>% broom::tidy()
 lm(IL6R ~ estimate + aneuploidy, data=brca) %>% broom::tidy()
 lm(CGAS ~ aneuploidy, data=brca) %>% broom::tidy()
 lm(CGAS ~ estimate + aneuploidy, data=brca) %>% broom::tidy()
+lm(CGAS ~ estimate + CIN70_Carter2006, data=brca) %>% broom::tidy()
+lm(CGAS ~ estimate + Buccitelli_up, data=brca) %>% broom::tidy()
+lm(`IL-6/JAK/STAT3 Signaling` ~ estimate + IL6R, data=brca) %>% broom::tidy() # sign: cgas, il6, il6r
+lm(`Interferon Gamma Response` ~ estimate + CGAS, data=brca) %>% broom::tidy() # sign: only cgas
+lm(IL6R ~ estimate + `Interferon Gamma Response`, data=brca) %>% broom::tidy()
+# ifn pos + cgas top/bottom quartile?
+ifn = brca %>% filter(`Interferon Gamma Response` > 0) %>%
+    mutate(cgas_quart = cut(CGAS, breaks=quantile(CGAS, c(0,0.25,0.75,1)), labels=c("low", NA, "high")))
+lm(IL6 ~ estimate + `Interferon Gamma Response`, data=ifn) %>% broom::tidy()
+lm(IL6R ~ cgas_quart, data=ifn) %>% broom::tidy()
+no_ifn = brca %>% filter(`Interferon Gamma Response` < 0) %>%
+    mutate(cgas_quart = cut(CGAS, breaks=quantile(CGAS, c(0,0.25,0.75,1)), labels=c("low", NA, "high")))
+lm(IL6 ~ estimate + `Interferon Gamma Response`, data=no_ifn) %>% broom::tidy()
+lm(IL6R ~ cgas_quart, data=no_ifn) %>% broom::tidy()
 
-tnbc = aneup %>% filter(TNBC == 1)
+
+# we have:
+# * cgas up with aneup, CIN70, Buccitelli_up, IFNg resp, IL6 sig
+# * IL6/R up with cgas, IL6 sig but not with IFNg resp
+# -> does [aneup/CIN] surv [with inflamm env] depend on cgas/IL6 sig?
+
+ggplot(brca, aes(x=CGAS, y=`Interferon Gamma Response`, color=factor(TNBC))) +
+    geom_point() +
+    geom_smooth(method="lm", se=FALSE)
+
+tnbc = brca %>% filter(TNBC == 1)
 lm(IL6 ~ estimate + aneuploidy, data=tnbc) %>% broom::tidy()
+lm(IL6 ~ estimate * aneuploidy, data=tnbc) %>% broom::tidy()
 lm(IL6R ~ estimate + aneuploidy, data=tnbc) %>% broom::tidy()
 lm(CGAS ~ aneuploidy, data=tnbc) %>% broom::tidy()
 lm(CGAS ~ estimate + aneuploidy, data=tnbc) %>% broom::tidy()
