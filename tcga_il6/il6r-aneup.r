@@ -12,8 +12,6 @@ load_expr = function(x) {
     tibble(Sample=rownames(re), IL6R=re[,1], IL6=re[,2], IL6ST=re[,3], CGAS=re[,4])
 }
 
-#todo: er/pr/her2 status? (@brca only script)
-
 brca_gsva = function() {
     gex = tcga$rna_seq("BRCA", trans="vst")
     rownames(gex) = idmap$gene(rownames(gex), to="hgnc_symbol")
@@ -57,7 +55,8 @@ brca_meta = function() {
                       TRUE ~ NA_real_
                   ),
                   ER_PR = pmax(ER, PR),
-                  TNBC = pmin(ER, PR, HER2)
+                  TNBC = pmin(ER, PR, HER2),
+                  tumor_stage, age_at_diagnosis
         )
 }
 
@@ -70,9 +69,12 @@ aneup = lapply(cohorts, tcga$aneuploidy) %>%
     inner_join(expr) %>%
     inner_join(pur) %>%
     left_join(brca_meta()) %>%
-    left_join(immune %>% select(Sample, `Immune Subtype`)) %>%
+    left_join(immune %>% select(Sample, `Immune Subtype`, `OS Time`, `OS`)) %>%
     left_join(scores) %>%
     mutate(aneuploidy = aneup_log2seg / estimate) # cancer aneup - stroma
+brca = aneup %>% filter(cohort == "BRCA") %>%
+    mutate(cgas_quart = cut(CGAS, breaks=quantile(CGAS, c(0,0.25,0.75,1)), labels=c("low", NA, "high")))
+coad = aneup %>% filter(cohort == "COAD")
 
 scatter_with_correction = function(df, x, ys, cor) {
     df_one_y = function(y) {
@@ -112,11 +114,83 @@ p21 = scatter_with_correction(brca, "Interferon Gamma Response", c("CGAS", "IL6"
     ggtitle("Interferon Reponse")
 p22 = scatter_with_correction(brca, "IL-6/JAK/STAT3 Signaling", c("CGAS", "IL6", "IL6R"), "estimate") +
     ggtitle("IL6-STAT3 axis")
+pdf("tcga-cgas.pdf", 10, 11)
 (p11 | p12) / (p21 | p22) + plot_layout(heights=c(2,3), guides="collect")
+dev.off()
 
-brca = aneup %>% filter(cohort == "BRCA") %>%
-    mutate(cgas_quart = cut(CGAS, breaks=quantile(CGAS, c(0,0.25,0.75,1)), labels=c("low", NA, "high")))
-coad = aneup %>% filter(cohort == "COAD")
+# todo: add residuals for IFN, IL6 that are not explained by purity
+m1 = lm(`Interferon Gamma Response` ~ estimate, data=brca)
+brca$ifn_cor = brca$`Interferon Gamma Response` - predict(m1, newdata=data.frame(brca["estimate"]))
+m2 = lm(`IL-6/JAK/STAT3 Signaling` ~ estimate, data=brca)
+brca$il6_cor = brca$`IL-6/JAK/STAT3 Signaling` - predict(m2, newdata=data.frame(brca["estimate"]))
+brca$il6_bias = brca$il6_cor - brca$ifn_cor
+
+ggplot(brca, aes(x=ifn_cor, y=il6_cor)) +
+    geom_point(aes(shape=factor(HER2), fill=factor(ER_PR), size=CIN70_Carter2006), alpha=0.3) +
+    scale_shape_manual(values=c("0"=21, "1"=24), na.value=22) +
+    scale_fill_manual(values=c("0"="red", "1"="blue"), na.value="black") +
+    guides(shape = guide_legend("HER2 amp", override.aes = list(size=2, alpha=0.5)),
+           fill = guide_legend("ER/PR status", override.aes = list(size=2, alpha=0.5, shape=21))) +
+    theme_classic()
+
+
+
+
+
+ggplot(brca, aes(x=`Interferon Gamma Response`, y=`IL-6/JAK/STAT3 Signaling`)) +
+    geom_point(aes(shape=factor(HER2), fill=factor(ER_PR), size=CIN70_Carter2006), alpha=0.3) +
+    scale_shape_manual(values=c("0"=21, "1"=24), na.value=22) +
+    scale_fill_manual(values=c("0"="red", "1"="blue"), na.value="black") +
+    guides(shape = guide_legend("HER2 amp", override.aes = list(size=2, alpha=0.5)),
+           fill = guide_legend("ER/PR status", override.aes = list(size=2, alpha=0.5, shape=21))) +
+    theme_classic()
+
+library(survminer)
+library(survival)
+x = brca %>%
+#    filter(CIN70_Carter2006 > 0) %>%
+#    filter(aneuploidy > quantile(aneuploidy, 0.2, na.rm=T)) %>%
+    mutate(time=`OS Time`,
+           inflamm = `IL-6/JAK/STAT3 Signaling` + `Interferon Gamma Response`,
+           il6_bias = `IL-6/JAK/STAT3 Signaling` - `Interferon Gamma Response`,
+           cin = case_when(
+                CIN70_Carter2006 > 0 ~ "high",
+                CIN70_Carter2006 < 0 ~ "low",
+                TRUE ~ NA_character_
+            ),
+           cgas = case_when(
+                CGAS > quantile(CGAS, 0.75) ~ "high",
+                CGAS < quantile(CGAS, 0.25) ~ "low",
+                TRUE ~ NA_character_
+            ),
+           il6 = case_when(
+#             il6_cor > quantile(il6_cor, 0.75, na.rm=T) ~ "il6",
+#             il6_cor < quantile(il6_cor, 0.25, na.rm=T) ~ "ifn",
+            `IL-6/JAK/STAT3 Signaling` > 0 & `Interferon Gamma Response` < 0.0 ~ "il6",
+#                (`IL-6/JAK/STAT3 Signaling` - `Interferon Gamma Response`) > 0.2 ~ "il6",
+            `IL-6/JAK/STAT3 Signaling` < 0 & `Interferon Gamma Response` > 0.0 ~ "ifn",
+#                (`IL-6/JAK/STAT3 Signaling` - `Interferon Gamma Response`) < -0.2 ~ "ifn",
+            TRUE ~ NA_character_
+            ),
+            qq = case_when(
+                `IL-6/JAK/STAT3 Signaling` > 0 & `Interferon Gamma Response`> 0.25 ~ "both",
+                `IL-6/JAK/STAT3 Signaling` > 0 & `Interferon Gamma Response` < 0.25 ~ "il6",
+                `IL-6/JAK/STAT3 Signaling` < 0 & `Interferon Gamma Response` > 0 ~ "both",
+                `IL-6/JAK/STAT3 Signaling` < 0 & `Interferon Gamma Response` < 0 ~ "neither",
+                TRUE ~ NA_character_
+            )) # last 2 -0.25 gives stronger sep, but interpretable?
+coxph(Surv(`OS Time`, OS) ~ age_at_diagnosis + estimate + qq, data=x %>% filter(CIN70_Carter2006 > 0)) %>% broom::tidy()
+coxph(Surv(`OS Time`, OS) ~ age_at_diagnosis + estimate + qq, data=x %>% filter(CIN70_Carter2006 < 0)) %>% broom::tidy()
+
+fit = survfit(Surv(time, OS) ~ qq, data=x %>% filter(CIN70_Carter2006 > 0)); surv_pvalue(fit)
+x %>% filter(CIN70_Carter2006 > 0) %>% pull(qq) %>% table()
+ggsurvplot(fit, data=x, pval=TRUE, xlim=c(0,365*5))
+fit = survfit(Surv(time, OS) ~ qq, data=x %>% filter(CIN70_Carter2006 < 0)); surv_pvalue(fit)
+x %>% filter(CIN70_Carter2006 < 0) %>% pull(qq) %>% table()
+ggsurvplot(fit, data=x, pval=TRUE, xlim=c(0,365*5))
+# p=0.1 for CIN70>0, il6
+
+
 lm(IL6 ~ estimate + aneuploidy, data=brca) %>% broom::tidy()
 lm(IL6 ~ estimate * aneuploidy, data=brca) %>% broom::tidy()
 lm(IL6 ~ cgas_quart, data=brca) %>% broom::tidy()
