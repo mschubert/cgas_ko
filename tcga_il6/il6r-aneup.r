@@ -125,19 +125,9 @@ m2 = lm(`IL-6/JAK/STAT3 Signaling` ~ estimate, data=brca)
 brca$il6_cor = brca$`IL-6/JAK/STAT3 Signaling` - predict(m2, newdata=data.frame(brca["estimate"]))
 brca$il6_bias = brca$il6_cor - brca$ifn_cor
 
-ggplot(brca, aes(x=ifn_cor, y=il6_cor)) +
-    geom_point(aes(shape=factor(HER2), fill=factor(ER_PR), size=CIN70_Carter2006), alpha=0.3) +
-    scale_shape_manual(values=c("0"=21, "1"=24), na.value=22) +
-    scale_fill_manual(values=c("0"="red", "1"="blue"), na.value="black") +
-    guides(shape = guide_legend("HER2 amp", override.aes = list(size=2, alpha=0.5)),
-           fill = guide_legend("ER/PR status", override.aes = list(size=2, alpha=0.5, shape=21))) +
-    theme_classic()
 
 
-
-
-
-ggplot(brca, aes(x=`Interferon Gamma Response`, y=`IL-6/JAK/STAT3 Signaling`)) +
+ggplot(brca, aes(x=`Interferon Gamma Response`, y=il6_cor)) +
     geom_point(aes(shape=factor(HER2), fill=factor(ER_PR), size=CIN70_Carter2006), alpha=0.3) +
     scale_shape_manual(values=c("0"=21, "1"=24), na.value=22) +
     scale_fill_manual(values=c("0"="red", "1"="blue"), na.value="black") +
@@ -173,10 +163,10 @@ x = brca %>%
             TRUE ~ NA_character_
             ),
             qq = case_when(
-                `IL-6/JAK/STAT3 Signaling` > 0 & `Interferon Gamma Response`> 0.25 ~ "both",
-                `IL-6/JAK/STAT3 Signaling` > 0 & `Interferon Gamma Response` < 0.25 ~ "il6",
-                `IL-6/JAK/STAT3 Signaling` < 0 & `Interferon Gamma Response` > 0 ~ "both",
-                `IL-6/JAK/STAT3 Signaling` < 0 & `Interferon Gamma Response` < 0 ~ "neither",
+                il6_cor > 0 & `Interferon Gamma Response`> 0.25 ~ "both",
+                il6_cor > 0 & `Interferon Gamma Response` < 0.25 ~ "il6",
+                il6_cor < 0 & `Interferon Gamma Response` > 0.25 ~ "both",
+                il6_cor < 0 & `Interferon Gamma Response` < 0.25 ~ "neither",
                 TRUE ~ NA_character_
             )) # last 2 -0.25 gives stronger sep, but interpretable?
 coxph(Surv(`OS Time`, OS) ~ age_at_diagnosis + estimate + qq, data=x %>% filter(CIN70_Carter2006 > 0)) %>% broom::tidy()
