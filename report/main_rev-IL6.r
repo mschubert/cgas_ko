@@ -36,12 +36,14 @@ args = sys$cmd$parse(
 
 is_cyt = gset$get_human("GO_Molecular_Function_2021")[["cytokine activity (GO:0005125)"]]
 
-#cgas ko -> CXCL8 changed? (to sep from IL6)
+cgas_indep = readxl::read_xlsx("../comp_list/cmp/BT549 cGAS KO Reversine vs DMSO.xlsx") %>%
+    filter(padj < 0.25) %>% pull(label)
 
 res = readxl::read_xlsx(args$infile) %>%
     mutate(
         cyt = label %in% is_cyt,
         use_lab = ifelse(cyt & padj < 0.25, label, NA),
+        cgasdep = ! label %in% cgas_indep,
         class = case_when(
             padj > 0.25 ~ "n.s.",
             log2FoldChange > 0 ~ "up",
@@ -54,20 +56,23 @@ breaks_with_thresh = function(...) c(0.25, scales::log_breaks(base=10)(res$padj,
 p = ggplot(res, aes(x=log2FoldChange, y=padj)) +
     geom_hline(yintercept=0.25, color="grey", linetype="dashed") +
     geom_vline(xintercept=0, color="#858585") +
-    geom_point(aes(size=sqrt(baseMean), color=class, alpha=cyt)) +
+    geom_point(aes(size=sqrt(baseMean), color=class, fill=class, alpha=cyt, shape=cgasdep)) +
     ggrepel::geom_text_repel(aes(label=use_lab)) +
     scale_y_continuous(trans = .reverselog_trans(base=10),
                        labels = .scientific_10,
                        breaks = breaks_with_thresh) +
     scale_color_manual(values=c("n.s."="#c8c8c8", "up"="#00971e", "down"="#e10000")) +
+    scale_fill_manual(values=c("n.s."="#c8c8c8", "up"="#00971e", "down"="#e10000")) +
     scale_alpha_manual(values=c("TRUE"=0.9, "FALSE"=0.1)) +
     scale_size_continuous(breaks=c(0, 50, 200)) +
+    scale_shape_manual(values=c("TRUE"=21, "FALSE"=1)) +
     theme_classic() +
-    guides(color=FALSE) +
+    guides(color=FALSE, fill=FALSE, shape=guide_legend(override.aes=list(fill="black"))) +
     labs(y = "adjusted p-value (FDR)",
          size = "Expression level",
+         shape = "cGAS-dependent",
          alpha = "Cytokine")
 
-pdf(args$plotfile, 5.5, 6)
+pdf(args$plotfile, 5.8, 6)
 print(p)
 dev.off()
