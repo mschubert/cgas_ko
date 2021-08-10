@@ -1,5 +1,6 @@
 library(dplyr)
 library(DESeq2)
+.b = import('base')
 sys = import('sys')
 plt = import('plot')
 gset = import('genesets')
@@ -15,6 +16,16 @@ gset = import('genesets')
 .scientific_10 = function(x) {
     fmt = ifelse(x < 0.01, scales::scientific_format()(x), x)
     parse(text=gsub("1e", "10^", fmt))
+}
+.simplify = function(df, y, p=0.25) {
+    set.seed(123456)
+    idx = which(df[[y]] >= .b$minN(df[[y]][df[[y]] > p], 100))
+    prob = 1 - df[[y]][idx]+.Machine$double.eps*2
+#    prob[df$circle[idx]] = 1
+    keep = sample(idx, size=500, replace=FALSE, prob=prob)
+    df[[y]][setdiff(idx, keep)] = NA
+    df$label[idx] = NA
+    df
 }
 
 args = sys$cmd$parse(
@@ -35,7 +46,7 @@ res = readxl::read_xlsx(args$infile) %>%
             padj > 0.25 ~ "n.s.",
             log2FoldChange > 0 ~ "up",
             log2FoldChange < 0  ~"down"
-    ))
+    )) %>% .simplify("padj")
 
 plt$volcano(res, p=0.2, label_top=10, pos_label_bias=0.5)
 breaks_with_thresh = function(...) c(0.25, scales::log_breaks(base=10)(res$padj, 4))
