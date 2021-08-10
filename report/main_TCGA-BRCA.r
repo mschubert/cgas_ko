@@ -7,9 +7,8 @@ library(survival)
 tcga = import('data/tcga')
 gset = import('genesets')
 idmap = import('process/idmap')
-util = import('./supp_TCGA-BRCA')
 
-brca = util$brca()
+brca = readRDS("supp_TCGA-BRCA.rds")
 
 # todo: add residuals for IFN, IL6 that are not explained by purity
 m1 = lm(`Interferon Gamma Response` ~ estimate, data=brca)

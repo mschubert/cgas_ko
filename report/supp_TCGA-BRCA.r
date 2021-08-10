@@ -19,11 +19,6 @@ brca_gsva = function() {
     sets = gset$get_human(c("MSigDB_Hallmark_2020", "CIN")) %>% unname() %>% do.call(c, .)
     t(GSVA::gsva(gex, sets))
 }
-scores = brca_gsva() %>%
-    as.data.frame() %>%
-    tibble::rownames_to_column("Sample") %>%
-    as_tibble() %>%
-    mutate(Sample = gsub(".", "-", Sample, fixed=TRUE))
 
 load_thorsson = function(cohorts="BRCA") {
     immune_df = tcga$immune() %>%
@@ -62,6 +57,12 @@ brca_meta = function() {
 }
 
 load_brca = function() {
+    scores = brca_gsva() %>%
+        as.data.frame() %>%
+        tibble::rownames_to_column("Sample") %>%
+        as_tibble() %>%
+        mutate(Sample = gsub(".", "-", Sample, fixed=TRUE))
+
     brca = tcga$aneuploidy("BRCA") %>%
         inner_join(load_expr("BRCA")) %>%
         inner_join(tcga$purity()) %>%
@@ -75,7 +76,9 @@ scatter_with_correction = function(df, x, ys, cor) {
     df_one_y = function(y) {
         m = lm(as.formula(paste(y, "~", cor)), data=df)
         broom::tidy(m)
-        df$cor = df[[y]] - predict(m, newdata=df[cor])
+        pred_cor = predict(m, newdata=df[cor])
+        pred_intcp = predict(m, newdata=data.frame(estimate=1)) #fixme: cor="estimate"
+        df$cor = df[[y]] - (pred_cor - pred_intcp)
 
         df %>%
             select(Sample, !!! rlang::syms(c(x, sample=y, cor, cancer="cor"))) %>%
@@ -116,4 +119,6 @@ sys$run({
     pdf("supp_TCGA-BRCA.pdf", 10, 11)
     print((p11 | p12) / (p21 | p22) + plot_layout(heights=c(2,3), guides="collect"))
     dev.off()
+
+    saveRDS(brca, file="supp_TCGA-BRCA.rds")
 })
