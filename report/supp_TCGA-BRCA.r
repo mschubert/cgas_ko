@@ -72,12 +72,12 @@ load_brca = function() {
         mutate(aneuploidy = aneup_log2seg / estimate) # cancer aneup - stroma
 }
 
-scatter_with_correction = function(df, x, ys, cor) {
+scatter_with_correction = function(df, x, ys, cor, cor_value=1) {
     df_one_y = function(y) {
         m = lm(as.formula(paste(y, "~", cor)), data=df)
         broom::tidy(m)
         pred_cor = predict(m, newdata=df[cor])
-        pred_intcp = predict(m, newdata=data.frame(estimate=1)) #fixme: cor="estimate"
+        pred_intcp = predict(m, newdata=tibble(!! rlang::sym(cor) := cor_value))
         df$cor = df[[y]] - (pred_cor - pred_intcp)
 
         df %>%
