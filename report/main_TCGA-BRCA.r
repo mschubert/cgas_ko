@@ -4,11 +4,8 @@ library(patchwork)
 library(ggpmisc)
 library(survminer)
 library(survival)
-tcga = import('data/tcga')
-gset = import('genesets')
-idmap = import('process/idmap')
 
-brca = readRDS("supp_TCGA-BRCA.rds")
+brca = readRDS("../data/tcga-brca.rds")
 
 # todo: add residuals for IFN, IL6 that are not explained by purity
 m1 = lm(`Interferon Gamma Response` ~ estimate, data=brca)
