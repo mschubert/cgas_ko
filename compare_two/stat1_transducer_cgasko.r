@@ -55,11 +55,14 @@ arrws = sres2 %>%
     tidyr::pivot_longer(!y, names_to = c(".value", "set"), names_pattern = "([^0-9]+)(.)") %>%
     mutate(set=arts[as.integer(set)])
 
+best_fit = lm(y ~ 0 + x, data=sres2) %>% broom::tidy()
+
 cairo_pdf(args$plotfile, 9, 7)
 ggplot(sres2, aes(x=x, y=y)) +
     geom_hline(yintercept=0, color="darkgrey", linetype="dotted") +
     geom_vline(xintercept=0, color="darkgrey", linetype="dotted") +
-    geom_abline(slope=1, size=2, color="grey", linetype="dashed") +
+    geom_abline(slope=c(1,best_fit$estimate), size=2,
+                color=c("grey90","grey40"), linetype="dashed") +
     geom_point(aes(size=size, fill=collection, alpha=min_p), shape=21) +
     scale_alpha_manual(values=c("<0.05"=0.9, "<0.2"=0.4, "n.s."=0.1)) +
     scale_size_area() +
