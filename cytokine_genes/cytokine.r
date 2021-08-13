@@ -1,6 +1,7 @@
 library(dplyr)
 library(ggplot2)
 library(DESeq2)
+library(pheatmap)
 sys = import('sys')
 gset = import('genesets')
 idmap = import('process/idmap')
@@ -44,6 +45,9 @@ vs = vs[intersect(genes, wt_rev$label),]
 vs_scaled = vs %>% narray::map(along=2, scale) #%>% narray::map(along=1, scale)
 #rownames(vs_scaled)[! rownames(vs_scaled) %in% hlg] = ""
 
+pdf(args$plotfile)
+on.exit(dev.off)
+
 pheatmap(t(vs), main="48 h")
 pheatmap(t(vs_scaled), main="z-score genes WT DMSO>REV 48h FDR<0.05")
 
@@ -69,6 +73,3 @@ ggplot(df, aes(x=um1, y=um2, color=clust)) +
 koset = split(df$gene, df$clust)
 scores = GSVA::gsva(vs_scaled, koset)
 pheatmap(t(scores))
-
-
-
