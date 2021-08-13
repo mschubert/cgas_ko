@@ -50,7 +50,7 @@ plot_pca = function(eset, vst) {
 #}
 
 plot_kos = function(eset) {
-    genes = c("CGAS", "STAT1", "STAT3", "IL6", "IFNA", "RELB", "CCL5", "CXCL10", "MYC", "BIRC5")
+    genes = c("CGAS", "STAT1", "STAT3", "IL6", "IFNA", "RELA", "RELB", "CXCL10", "MYC", "BIRC5")
     nr = counts(eset, normalized=TRUE)
     rownames(nr) = idmap$gene(rownames(nr), to="hgnc_symbol")
     names(dimnames(nr)) = c("gene", "sample_id")

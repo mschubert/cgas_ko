@@ -34,3 +34,12 @@ rule gsva:
             " --eset {input.eset}"
             " --setfile {input.setfile}"
             " --outfile {output.outfile}"
+
+rule tcga:
+    input:
+        rscript = "tcga-brca.r"
+    output:
+        outfile = "tcga-brca.rds"
+    shell:
+        "Rscript {input.rscript}"
+            " --outfile {output.outfile}"
