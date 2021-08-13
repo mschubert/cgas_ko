@@ -7,7 +7,7 @@ gset = import('genesets')
 
 args = sys$cmd$parse(
     opt('i', 'infile', 'rds', '../comp_list/summary.rds'),
-    opt('p', 'plotfile', 'pdf', '1-rev_cgas_wt.pdf')
+    opt('p', 'plotfile', 'pdf', 'main_rev-lfc2D.pdf')
 )
 
 lookup = c(
@@ -75,7 +75,7 @@ ggplot(sres2, aes(x=x, y=y)) +
     geom_abline(slope=1, size=2, color="grey", linetype="dashed") +
     geom_point(aes(size=size, fill=collection, alpha=min_p, shape=p_src), shape=21) +
 #    scale_shape_manual(values=c("cGas-dependent"=21, "cGas-independent"=22)) +
-    scale_alpha_manual(values=c("<1e-15"=0.9, "<0.01"=0.3, "n.s."=0.1)) +
+    scale_alpha_manual(values=c("<1e-15"=0.9, "<0.01"=0.5, "n.s."=0.1)) +
     scale_size_area() +
     geom_segment(data=arrws, aes(x=from, xend=to, y=y, yend=y, color=set),
                  arrow = arrow(length = unit(0.01, "npc"), type="closed")) +
