@@ -67,7 +67,7 @@ load_cohort = function(cohort) {
         left_join(brca_meta()) %>%
         left_join(load_thorsson() %>% select(Sample, `Immune Subtype`, `OS Time`, `OS`)) %>%
         left_join(scores) %>%
-        mutate(aneuploidy = aneup_log2seg / estimate) # cancer aneup - stroma
+        dplyr::rename(aneuploidy = aneup_log2seg)
 }
 
 sys$run({
