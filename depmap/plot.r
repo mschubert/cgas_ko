@@ -9,6 +9,7 @@ args = sys$cmd$parse(
 )
 
 res = readRDS(args$infile) %>%
+    mutate(estimate = sign(estimate) * pmin(abs(estimate), 1)) %>%
     split(.$dcol)
 
 plots = lapply(res, plt$volcano, y="p.value", label="mcol")
