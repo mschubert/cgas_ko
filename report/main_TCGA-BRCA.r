@@ -42,32 +42,15 @@ asm1 = pdx + plot_spacer() + psc + pdy + plot_layout(ncol=2, widths=c(10,1), hei
 
 x = brca %>%
     mutate(OS_years = `OS Time` / 365,
-           inflamm = `IL-6/JAK/STAT3 Signaling` + `Interferon Gamma Response`,
-           il6_bias = `IL-6/JAK/STAT3 Signaling` - `Interferon Gamma Response`,
-           cin = case_when(
-                CIN70_Carter2006 > 0 ~ "high",
-                CIN70_Carter2006 < 0 ~ "low",
-                TRUE ~ NA_character_
-            ),
-           cgas = case_when(
-                CGAS > quantile(CGAS, 0.75) ~ "high",
-                CGAS < quantile(CGAS, 0.25) ~ "low",
-                TRUE ~ NA_character_
-            ),
-           il6 = case_when(
-            `IL-6/JAK/STAT3 Signaling` > 0 & `Interferon Gamma Response` < 0.0 ~ "il6",
-            `IL-6/JAK/STAT3 Signaling` < 0 & `Interferon Gamma Response` > 0.0 ~ "ifn",
-            TRUE ~ NA_character_
-            ),
-            qq = case_when(
-                il6_cor > 0 & `Interferon Gamma Response`> 0.25 ~ "both",
-                il6_cor > 0 & `Interferon Gamma Response` < 0.25 ~ "il6",
-                il6_cor < 0 & `Interferon Gamma Response` > 0.25 ~ "both",
-                il6_cor < 0 & `Interferon Gamma Response` < 0.25 ~ "neither",
-                TRUE ~ NA_character_
-            )) # last 2 -0.25 gives stronger sep, but interpretable?
+           qq = case_when(
+               il6_cor > 0 & `Interferon Gamma Response`> 0.25 ~ "both",
+               il6_cor > 0 & `Interferon Gamma Response` < 0.25 ~ "il6",
+               il6_cor < 0 & `Interferon Gamma Response` > 0.25 ~ "both",
+               il6_cor < 0 & `Interferon Gamma Response` < 0.25 ~ "neither",
+               TRUE ~ NA_character_
+           ))
 m1 = coxph(Surv(OS_years, OS) ~ age_at_diagnosis + estimate + qq, data=x %>% filter(CIN70_Carter2006 > 0)) %>% broom::tidy(); m1
-m2 = coxph(Surv(OS_years, OS) ~ age_at_diagnosis + estimate + qq, data=x %>% filter(CIN70_Carter2006 < 0)) %>% broom::tidy()
+m2 = coxph(Surv(OS_years, OS) ~ age_at_diagnosis + estimate + qq, data=x %>% filter(CIN70_Carter2006 < 0)) %>% broom::tidy(); m2
 
 pal = c("blue", "#ad07e3", "#ababab")
 lab = c("Ifn-driven", "IL6-driven", "Immune cold")
