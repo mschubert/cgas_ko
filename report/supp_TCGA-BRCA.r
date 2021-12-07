@@ -47,7 +47,12 @@ sys$run({
     p22 = scatter_with_correction(brca, "IL-6/JAK/STAT3 Signaling", c("CGAS", "IL6", "IL6R"), "estimate") +
         ggtitle("IL6-STAT3 axis")
 
+    asm = ((p11 | p12) / (p21 | p22)) +
+        plot_annotation(tag_levels="a") +
+        plot_layout(heights=c(2,3), guides="collect") &
+        theme(plot.tag = element_text(size=18, face="bold"))
+
     pdf("supp_TCGA-BRCA.pdf", 10, 11)
-    print((p11 | p12) / (p21 | p22) + plot_layout(heights=c(2,3), guides="collect"))
+    print(asm)
     dev.off()
 })

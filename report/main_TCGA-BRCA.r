@@ -43,9 +43,8 @@ asm1 = pdx + plot_spacer() + psc + pdy + plot_layout(ncol=2, widths=c(10,1), hei
 x = brca %>%
     mutate(OS_years = `OS Time` / 365,
            qq = case_when(
-               il6_cor > 0 & `Interferon Gamma Response`> 0.25 ~ "both",
+               `Interferon Gamma Response` > 0.25 ~ "both",
                il6_cor > 0 & `Interferon Gamma Response` < 0.25 ~ "il6",
-               il6_cor < 0 & `Interferon Gamma Response` > 0.25 ~ "both",
                il6_cor < 0 & `Interferon Gamma Response` < 0.25 ~ "neither",
                TRUE ~ NA_character_
            ))
