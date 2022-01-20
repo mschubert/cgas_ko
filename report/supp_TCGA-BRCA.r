@@ -25,7 +25,7 @@ scatter_with_correction = function(df, x, ys, cor, cor_value=1) {
         geom_point(aes(shape=factor(HER2), fill=factor(ER_PR)), alpha=0.1) +
         geom_smooth(method="lm", se=FALSE) +
         ggpmisc::stat_fit_glance(method="lm", geom="text_npc", size=3.5, label.x=0.1,
-                                 aes(label = paste("p", signif(..p.value.., digits = 2)))) +
+                                 aes(label = paste0("p=", signif(..p.value.., digits = 2)))) +
         scale_shape_manual(values=c(normal=21, amplified=24, unknown=22)) +
         scale_fill_manual(values=c(negative="red", positive="blue", unknown="#ffffff00")) +
         guides(shape = guide_legend("HER2 status", override.aes = list(size=3, alpha=0.5)),
