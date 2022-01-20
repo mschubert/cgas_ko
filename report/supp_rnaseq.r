@@ -13,14 +13,16 @@ res = list(
 )
 
 wt = list(
-    plt$volcano(res$wt[[1]], p=0.25, label_top=40) + labs(title="BT549 wild-type", subtitle="Genes", y="FDR"),
-    plt$volcano(res$wt[[2]], p=0.05, label_top=20) + labs(subtitle="MSigDB Hallmarks", y="FDR"),
-    plt$volcano(res$wt[[3]], p=0.05, label_top=20) + labs(subtitle="DoRothEA TF regulons", y="FDR")
+    plt$volcano(res$wt[[1]], p=0.25, label_top=40) +
+        labs(title="BT549 wild-type: Reversine vs. DMSO", subtitle="Genes", y="Adjusted p-value (FDR)"),
+    plt$volcano(res$wt[[2]], p=0.05, label_top=20) + labs(subtitle="MSigDB Hallmarks", y="Adjusted p-value (FDR)"),
+    plt$volcano(res$wt[[3]], p=0.05, label_top=20) + labs(subtitle="DoRothEA TF regulons", y="Adjusted p-value (FDR)")
 )
 cgas = list(
-    plt$volcano(res$cgas[[1]], p=0.25, label_top=40) + labs(title="BT549 cGAS KO", subtitle="Genes", y="FDR"),
-    plt$volcano(res$cgas[[2]], p=0.05, label_top=20) + labs(subtitle="MSigDB Hallmarks", y="FDR"),
-    plt$volcano(res$cgas[[3]], p=0.05, label_top=20) + labs(subtitle="DoRothEA TF regulons", y="FDR")
+    plt$volcano(res$cgas[[1]], p=0.25, label_top=40) +
+        labs(title="BT549 cGAS KO: Reversine vs. DMSO", subtitle="Genes", y="Adjusted p-value (FDR)"),
+    plt$volcano(res$cgas[[2]], p=0.05, label_top=20) + labs(subtitle="MSigDB Hallmarks", y="Adjusted p-value (FDR)"),
+    plt$volcano(res$cgas[[3]], p=0.05, label_top=20) + labs(subtitle="DoRothEA TF regulons", y="Adjusted p-value (FDR)")
 )
 volcs = wrap_plots(wt) / wrap_plots(cgas)
 

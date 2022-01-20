@@ -10,6 +10,16 @@ args = sys$cmd$parse(
     opt('p', 'plotfile', 'pdf', 'main_rev-lfc2D.pdf')
 )
 
+tt = theme(
+    axis.title.x = element_text(size=14),
+    axis.title.y = element_text(size=14),
+    axis.text.x = element_text(size=12),
+    axis.text.y = element_text(size=12),
+    legend.title = element_text(size=14),
+    legend.text = element_text(size=12),
+    plot.title = element_text(size=14)
+)
+
 lookup = c(
     "BT549 cGAS KO reversine vs BT549 WT reversine" = "diff",
     "BT549 cGAS KO Reversine vs DMSO" = "y",
@@ -54,43 +64,42 @@ sres2 = cmp_sets %>%
     tidyr::pivot_wider(names_from=c(cond), values_from=c(log2FoldChange)) %>%
     left_join(cmp_sets %>% filter(cond == "y") %>% select(label, fdr_y=adj.p)) %>%
     left_join(cmp_sets %>% filter(cond == "diff") %>% select(label, fdr_diff=adj.p)) %>%
-    mutate(p_src = ifelse(fdr_diff < fdr_y, "cGas-dependent", "cGas-independent"),
+    mutate(p_src = ifelse(fdr_diff < fdr_y, "cGAS-dependent", "cGAS-independent"),
            min_p = ifelse(fdr_diff < fdr_y, fdr_diff, fdr_y),
            label = ifelse(min_p < 1e-10 | label %in% show_lab, label, NA),
            min_p = cut(min_p, breaks=c(0, 1e-15, 0.01, Inf), labels=c("<1e-15", "<0.01", "n.s.")))
 
 arr = c("Interferon Gamma Response", "Interferon Alpha Response", "STAT1",
         "TNF-alpha Signaling via NF-kB", "E2F Targets")
-arts = c("cGas-independent", "cGas-dependent")
+arts = c("cGAS-independent", "cGAS-dependent")
 arrws = sres2 %>%
     filter(label %in% arr) %>%
     transmute(y, from1=0, to1=y, from2=y, to2=x) %>%
     tidyr::pivot_longer(!y, names_to = c(".value", "set"), names_pattern = "([^0-9]+)(.)") %>%
     mutate(set=arts[as.integer(set)])
 
-cairo_pdf(args$plotfile, 9, 7)
+cairo_pdf(args$plotfile, 11, 8)
 ggplot(sres2, aes(x=x, y=y)) +
     geom_hline(yintercept=0, color="darkgrey", linetype="dotted") +
     geom_vline(xintercept=0, color="darkgrey", linetype="dotted") +
     geom_abline(slope=1, size=2, color="grey", linetype="dashed") +
     geom_point(aes(size=size, fill=collection, alpha=min_p, shape=p_src), shape=21) +
-#    scale_shape_manual(values=c("cGas-dependent"=21, "cGas-independent"=22)) +
-    scale_alpha_manual(values=c("<1e-15"=0.9, "<0.01"=0.6, "n.s."=0.1)) +
+    scale_alpha_manual(values=c("<1e-15"=0.9, "<0.01"=0.65, "n.s."=0.1)) +
     scale_size_area() +
     geom_segment(data=arrws, aes(x=from, xend=to, y=y, yend=y, color=set),
                  arrow = arrow(length = unit(0.01, "npc"), type="closed")) +
     scale_color_brewer(palette="Dark2") +
-    ggrepel::geom_label_repel(aes(label=label, alpha=min_p), size=3, max.iter=1e5, label.size=NA,
+    ggrepel::geom_label_repel(aes(label=label, alpha=min_p), size=4, max.iter=1e5, label.size=NA,
         min.segment.length=0, max.overlaps=Inf, segment.alpha=0.3, fill="#ffffffc0",
         label.padding=unit(0.2, "lines")) +
-#    geom_text(data=data.frame(x=0.5, y=0.5, txt="more cGas-independent ⇖    ⇘ more cGas-dependent  "),
-#              aes(x=x, y=y, label=txt), inherit.aes=FALSE, size=3.5, fontface="bold", color="#757575") +
-    theme_classic() +
-    labs(x = "log2 FC wt: rev vs. DMSO",
-         y = "log2 FC cGas KO: rev vs. DMSO",
-         size = "Set genes",
+    theme_classic() + tt +
+    guides(alpha = guide_legend(override.aes = list(size=3, shape=21)),
+           fill = guide_legend(override.aes = list(size=3, alpha=0.5))) +
+    labs(x = bquote(~log[2] * " FC wt: Reversine vs. DMSO"),
+         y = bquote(~log[2] * " FC cGAS KO: Reversine vs. DMSO"),
+         size = "Genes in set",
          color = "FC origin",
          shape = "FDR origin",
          fill = "Set type",
-         alpha = "FDR")
+         alpha = "FDR cGAS effect")
 dev.off()
