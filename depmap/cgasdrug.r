@@ -15,6 +15,9 @@ sys$run({
 
     meta = depmap::depmap_metadata()
     gex_mat = depmap::depmap_TPM() %>% util$long2wide("rna_expression", meta)
+    prot_mat = depmap::depmap_proteomic() %>% util$long2wide("protein_expression", meta)
+    rownames(prot_mat) = paste0("prot.", rownames(prot_mat))
+    gpmat = narray::stack(gex_mat, prot_mat, along=1)
 
 #    dresp = readr::read_csv("secondary-screen-dose-response-curve-parameters.csv")
 #    dmat = util$long2wide(dplyr::rename(dresp, gene_name=name, cell_line=ccle_name), "auc")
@@ -26,10 +29,12 @@ sys$run({
     if (args$tissue == "BRCA") {
         brca_lines = meta %>% filter(primary_disease == "Breast Cancer") %>% pull(cell_line)
         gex_mat = gex_mat[,colnames(gex_mat) %in% brca_lines]
+        gpmat = gpmat[,colnames(gpmat) %in% brca_lines]
     }
 
     smat = switch(args$set,
-        genes = gex_mat[c("CGAS", "IL6", "IL6R", "IL6ST", "RELB", "RELA"),],
+        genes = gpmat[c("CGAS", "IL6", "IL6R", "IL6ST", "RELB", "RELA",
+                        "prot.MB21D1", "prot.IL6ST", "prot.RELA", "prot.RELB"),],
         CIN = util$cin(meta, gex_mat),
         GSVA::gsva(gex_mat, gset$get_human(args$set))
     )

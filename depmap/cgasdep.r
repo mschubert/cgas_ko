@@ -8,6 +8,7 @@ seq = import('seq')
 
 long2wide = function(df, field, meta) {
     wide = df %>%
+        filter(!is.na(cell_line), !is.na(gene_name)) %>%
         group_by(cell_line, gene_name) %>%
             summarize(value = mean(!! rlang::sym(field))) %>%
         ungroup() %>%
