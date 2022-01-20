@@ -1,8 +1,8 @@
 library(dplyr)
 library(DESeq2)
+library(ggplot2)
 .b = import('base')
 sys = import('sys')
-plt = import('plot')
 gset = import('genesets')
 
 #todo: move this to a "scales" util
@@ -41,8 +41,8 @@ cgas_indep = readxl::read_xlsx("../comp_list/cmp/BT549 cGAS KO Reversine vs DMSO
 
 res = readxl::read_xlsx(args$infile) %>%
     mutate(
-        cyt = label %in% is_cyt,
-        use_lab = ifelse(cyt & padj < 0.25, label, NA),
+        cyt = ifelse(label %in% is_cyt, "Cytokine", "Other"),
+        use_lab = ifelse(cyt=="Cytokine" & padj < 0.25, label, NA),
         cgasdep = ! label %in% cgas_indep,
         class = case_when(
             padj > 0.25 ~ "n.s.",
@@ -50,29 +50,40 @@ res = readxl::read_xlsx(args$infile) %>%
             log2FoldChange < 0  ~"down"
     )) %>% .simplify("padj")
 
-plt$volcano(res, p=0.2, label_top=10, pos_label_bias=0.5)
 breaks_with_thresh = function(...) c(0.25, scales::log_breaks(base=10)(res$padj, 4))
+
+tt = theme(
+    axis.title.x = element_text(size=14),
+    axis.title.y = element_text(size=14),
+    axis.text.x = element_text(size=12),
+    axis.text.y = element_text(size=12),
+    legend.title = element_text(size=14),
+    legend.text = element_text(size=12),
+    plot.title = element_text(size=14)
+)
 
 p = ggplot(res, aes(x=log2FoldChange, y=padj)) +
     geom_hline(yintercept=0.25, color="grey", linetype="dashed") +
     geom_vline(xintercept=0, color="#858585") +
     geom_point(aes(size=sqrt(baseMean), color=class, fill=class, alpha=cyt, shape=cgasdep)) +
-    ggrepel::geom_text_repel(aes(label=use_lab)) +
+    ggrepel::geom_text_repel(aes(label=use_lab), size=4.5) +
     scale_y_continuous(trans = .reverselog_trans(base=10),
                        labels = .scientific_10,
                        breaks = breaks_with_thresh) +
     scale_color_manual(values=c("n.s."="#c8c8c8", "up"="#00971e", "down"="#e10000")) +
     scale_fill_manual(values=c("n.s."="#c8c8c8", "up"="#00971e", "down"="#e10000")) +
-    scale_alpha_manual(values=c("TRUE"=0.9, "FALSE"=0.1)) +
+    scale_alpha_manual(values=c("Cytokine"=0.9, "Other"=0.1)) +
     scale_size_continuous(breaks=c(0, 50, 200)) +
     scale_shape_manual(values=c("TRUE"=21, "FALSE"=1)) +
-    theme_classic() +
-    guides(color=FALSE, fill=FALSE, shape=guide_legend(override.aes=list(fill="black"))) +
-    labs(y = "adjusted p-value (FDR)",
+    theme_classic() + tt +
+    guides(color = "none", fill = "none",
+           shape = guide_legend(override.aes = list(size=3, fill="black")),
+           alpha = guide_legend(override.aes = list(size=3))) +
+    labs(y = "Adjusted p-value (FDR)",
          size = "Expression level",
          shape = "cGAS-dependent",
-         alpha = "Cytokine")
+         alpha = "Gene type")
 
-pdf(args$plotfile, 5.8, 6)
+pdf(args$plotfile, 7, 7)
 print(p)
 dev.off()
