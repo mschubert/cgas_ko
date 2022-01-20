@@ -43,7 +43,7 @@ psc = ggplot(brca, aes(x=`Interferon Gamma Response`, y=il6_cor)) +
     annotate("text_npc", npcx=0.95, npcy=0.05, label="Ifn-driven", color="black", size=6) +
     geom_point(aes(shape=factor(HER2), fill=factor(ER_PR), size=CIN70_Carter2006), alpha=0.3) +
     scale_shape_manual(values=c(normal=21, amplified=24, unknown=22)) +
-    scale_fill_manual(values=c(negative="red", positive="blue", unknown="black")) +
+    scale_fill_manual(values=c(negative="red", positive="blue", unknown="#ffffff00")) +
     scale_size_continuous(range=c(0.3,4)) +
     guides(shape = guide_legend("HER2 status", override.aes = list(size=3, alpha=0.5)),
            fill = guide_legend("ER/PR status", override.aes = list(size=3, alpha=0.5, shape=21))) +
