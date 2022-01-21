@@ -8,8 +8,10 @@ sys$run({
         opt('o', 'outfile', 'rds', 'tcga-pan.rds')
     )
 
-    pur = tcga$purity_estimate() %>% select(Sample, cohort, purity) # aran2015 different(!)
-    incl = sort(unique(pur$cohort))
+    pur2 = tcga$purity_estimate() %>% select(Sample, cohort, purity) # aran2015 different(!)
+    incl = sort(unique(pur2$cohort))
+    pur = tcga$purity_aran2015() %>% select(Sample, cohort, purity=estimate) %>%
+        filter(cohort %in% incl)
 
     meta = tcga$clinical() %>%
         transmute(patient = submitter_id,
@@ -21,7 +23,8 @@ sys$run({
                       TRUE ~ NA_character_),
                   age_days = age_at_diagnosis,
                   vital_status = factor(vital_status, levels=c("alive", "dead")),
-                  os_days = pmax(days_to_death,
+                  os_days = pmax(0,
+                                 days_to_death,
                                  days_to_last_known_disease_status,
                                  days_to_last_follow_up,
                                  na.rm=TRUE))
@@ -42,6 +45,7 @@ sys$run({
         left_join(aneup) %>%
         left_join(scores %>% select(Sample,
                                     `CIN70_Carter2006`,
+                                    `E2F Targets`,
                                     `Interferon Gamma Response`,
                                     `IL-6/JAK/STAT3 Signaling`)) %>%
         select(-patient)
