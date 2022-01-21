@@ -74,32 +74,31 @@ x = brca %>%
     mutate(OS = ifelse(OS_years>5, 0, OS),
            OS_years = pmin(OS_years, 5))
 
-m1 = coxph(Surv(OS_years, OS) ~ age_at_diagnosis + estimate + qq,
-           data=x %>% filter(CIN70_Carter2006 > 0)) %>% broom::tidy(); m1
-m2 = coxph(Surv(OS_years, OS) ~ age_at_diagnosis + estimate + qq,
-           data=x %>% filter(CIN70_Carter2006 < 0)) %>% broom::tidy(); m2
-m1p = coxph(Surv(OS_years, OS) ~ age_at_diagnosis + estimate + `E2F Targets` + qq,
-            data=x %>% filter(CIN70_Carter2006 > 0)) %>% broom::tidy(); m1p
-m2p = coxph(Surv(OS_years, OS) ~ age_at_diagnosis + estimate + `E2F Targets` + qq,
-            data=x %>% filter(CIN70_Carter2006 < 0)) %>% broom::tidy(); m2p
-p_il6 = . %>% filter(term=="qqil6") %>% pull(p.value)
+surv_one = function(dx) {
+    pal = c("blue", "#ad07e3", "#ababab")
+    lab = c("Ifn-driven", "IL6-driven", "Immune cold")
 
-pal = c("blue", "#ad07e3", "#ababab")
-lab = c("Ifn-driven", "IL6-driven", "Immune cold")
-fit = survfit(Surv(OS_years, OS) ~ qq, data=x %>% filter(CIN70_Carter2006 > 0)); surv_pvalue(fit)
-x %>% filter(CIN70_Carter2006 > 0) %>% pull(qq) %>% table()
-ps1 = ggsurvplot(fit, data=x, pval=TRUE, xlim=c(0,5), break.time.by=2.5, palette=pal, legend.labs=lab)$plot +
-    ylim(c(0.7,1)) + xlab("Overall survival (years)") + ggtitle("CIN70 high") +
-    annotate("text_npc", npcx=0.05, npcy=0.07,
-             label=sprintf("p=%.2g\np=%.2g (Proliferation corr.)", p_il6(m1), p_il6(m1p)))
-fit = survfit(Surv(OS_years, OS) ~ qq, data=x %>% filter(CIN70_Carter2006 < 0)); surv_pvalue(fit)
-x %>% filter(CIN70_Carter2006 < 0) %>% pull(qq) %>% table()
-ps2 = ggsurvplot(fit, data=x, pval=TRUE, xlim=c(0,5), break.time.by=2.5, palette=pal, legend.labs=lab)$plot +
-    ylim(c(0.7,1)) + xlab("Overall survival (years)") + ggtitle("CIN70 low") +
-    annotate("text_npc", npcx=0.05, npcy=0.07,
-             label=sprintf("p=%.2g\np=%.2g (Proliferation corr.)", p_il6(m2), p_il6(m2p)))
-asm2 = (ps1 + ps2 + plot_layout(guides="collect")) & theme(legend.direction = "vertical") & tt
+    m1 = coxph(Surv(OS_years, OS) ~ age_at_diagnosis + estimate + qq, data=dx) %>% broom::tidy(); m1
+    m1p = coxph(Surv(OS_years, OS) ~ age_at_diagnosis + estimate + `E2F Targets` + qq, data=dx) %>% broom::tidy(); m1p
+    p_il6 = . %>% filter(term=="qqil6") %>% pull(p.value)
 
-pdf("main_TCGA-BRCA.pdf", 8.35, 10)
-asm1 / asm2 + plot_layout(heights=c(2,0.85))
+    fit = survfit(Surv(OS_years, OS) ~ qq, data=dx); surv_pvalue(fit)
+    dx %>% pull(qq) %>% table()
+
+    ggsurvplot(fit, data=dx, pval=TRUE, xlim=c(0,5), break.time.by=2.5, palette=pal, legend.labs=lab)$plot +
+        ylim(c(0.7,1)) + xlab("Overall survival (years)") +
+        annotate("text_npc", npcx=0.05, npcy=0.07,
+                 label=sprintf("p=%.2g\np=%.2g (Proliferation corr.)", p_il6(m1), p_il6(m1p)))
+}
+dx = x # wtf, ggsurvplot
+survs = list(
+    surv_one(x %>% filter(aneuploidy > 0.2)) + ggtitle("Aneuploidy high"),
+    surv_one(x %>% filter(aneuploidy < 0.2)) + ggtitle("Aneuploidy low"),
+    surv_one(x %>% filter(CIN70_Carter2006 > 0)) + ggtitle("CIN70 high"),
+    surv_one(x %>% filter(CIN70_Carter2006 < 0)) + ggtitle("CIN70 low")
+)
+asm2 = (wrap_plots(survs) + plot_layout(guides="collect")) & theme(legend.direction = "vertical") & tt
+
+pdf("main_TCGA-BRCA.pdf", 18, 8)
+(asm1 | wrap_elements(asm2)) + plot_layout(widths=c(1,1.2))
 dev.off()
