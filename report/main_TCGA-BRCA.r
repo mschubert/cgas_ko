@@ -70,7 +70,10 @@ x = brca %>%
                il6_cor > 0 & `Interferon Gamma Response` < 0.25 ~ "il6",
                il6_cor < 0 & `Interferon Gamma Response` < 0.25 ~ "neither",
                TRUE ~ NA_character_
-           ))
+           )) %>%
+    mutate(OS = ifelse(OS_years>5, 0, OS),
+           OS_years = pmin(OS_years, 5))
+
 m1 = coxph(Surv(OS_years, OS) ~ age_at_diagnosis + estimate + qq,
            data=x %>% filter(CIN70_Carter2006 > 0)) %>% broom::tidy(); m1
 m2 = coxph(Surv(OS_years, OS) ~ age_at_diagnosis + estimate + qq,
@@ -87,13 +90,13 @@ fit = survfit(Surv(OS_years, OS) ~ qq, data=x %>% filter(CIN70_Carter2006 > 0));
 x %>% filter(CIN70_Carter2006 > 0) %>% pull(qq) %>% table()
 ps1 = ggsurvplot(fit, data=x, pval=TRUE, xlim=c(0,5), break.time.by=2.5, palette=pal, legend.labs=lab)$plot +
     ylim(c(0.7,1)) + xlab("Overall survival (years)") + ggtitle("CIN70 high") +
-    annotate("text_npc", npcx=0.1, npcy=0.1,
+    annotate("text_npc", npcx=0.05, npcy=0.07,
              label=sprintf("p=%.2g\np=%.2g (Proliferation corr.)", p_il6(m1), p_il6(m1p)))
 fit = survfit(Surv(OS_years, OS) ~ qq, data=x %>% filter(CIN70_Carter2006 < 0)); surv_pvalue(fit)
 x %>% filter(CIN70_Carter2006 < 0) %>% pull(qq) %>% table()
 ps2 = ggsurvplot(fit, data=x, pval=TRUE, xlim=c(0,5), break.time.by=2.5, palette=pal, legend.labs=lab)$plot +
     ylim(c(0.7,1)) + xlab("Overall survival (years)") + ggtitle("CIN70 low") +
-    annotate("text_npc", npcx=0.1, npcy=0.1,
+    annotate("text_npc", npcx=0.05, npcy=0.07,
              label=sprintf("p=%.2g\np=%.2g (Proliferation corr.)", p_il6(m2), p_il6(m2p)))
 asm2 = (ps1 + ps2 + plot_layout(guides="collect")) & theme(legend.direction = "vertical") & tt
 
