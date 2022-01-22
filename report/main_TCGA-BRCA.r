@@ -41,14 +41,14 @@ psc = ggplot(brca, aes(x=`Interferon Gamma Response`, y=il6_cor)) +
     annotate("text_npc", npcx=0.1, npcy=0.9, label="IL6-driven", color="black", size=6) +
     annotate("text_npc", npcx=0.3, npcy=0.05, label="Immune cold", color="black", size=6) +
     annotate("text_npc", npcx=0.95, npcy=0.05, label="Ifn-driven", color="black", size=6) +
-    geom_point(aes(shape=factor(HER2), fill=factor(ER_PR), size=CIN70_Carter2006), alpha=0.3) +
+    geom_point(aes(shape=factor(HER2), fill=factor(ER_PR), size=aneuploidy), alpha=0.3) +
     scale_shape_manual(values=c(normal=21, amplified=24, unknown=22)) +
     scale_fill_manual(values=c(negative="red", positive="blue", unknown="#ffffff00")) +
-    scale_size_continuous(range=c(0.3,4)) +
+    scale_size_continuous(range=c(0.2,5)) +
     guides(shape = guide_legend("HER2 status", override.aes = list(size=3, alpha=0.5)),
            fill = guide_legend("ER/PR status", override.aes = list(size=3, alpha=0.5, shape=21))) +
     theme_classic() + tt +
-    labs(size = "CIN70",
+    labs(size = "Aneuploidy",
          x = "Interferon Gamma Response (sample)",
          y = "IL-6/JAK/STAT3 Signaling (cancer)")
 pdx = ggplot(brca %>% filter(ER_PR != "unknown"), aes(x=`Interferon Gamma Response`, fill=factor(ER_PR))) +
