@@ -6,7 +6,7 @@ subworkflow genesets:
 
 rule all:
     input:
-        "rnaseq.pdf",
+        "rnaseq.pdf", "tcga.rds",
         expand("gsva/{sets}.rds", sets=config['genesets'])
 
 rule rnaseq:
@@ -37,9 +37,9 @@ rule gsva:
 
 rule tcga:
     input:
-        rscript = "tcga-brca.r"
+        rscript = "tcga.r"
     output:
-        outfile = "tcga-brca.rds"
+        outfile = "tcga.rds"
     shell:
         "Rscript {input.rscript}"
             " --outfile {output.outfile}"

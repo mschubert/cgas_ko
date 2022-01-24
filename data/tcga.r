@@ -9,9 +9,27 @@ gex_tmm = function(cohort, genes) {
     re
 }
 
+brca_meta = function() {
+    query = TCGAbiolinks::GDCquery(project="TCGA-BRCA", data.category="Clinical",
+                                   data.type="Clinical Supplement", data.format="BCR Biotab")
+    TCGAbiolinks::GDCdownload(query)
+    clin = TCGAbiolinks::GDCprepare(query)
+
+    clin$clinical_patient_brca %>%
+        transmute(patient = bcr_patient_barcode,
+                  `ER/PR` = case_when(
+                      er_status_by_ihc == "Positive" | pr_status_by_ihc == "Positive" ~ "Positive",
+                      er_status_by_ihc == "Unknown" | pr_status_by_ihc == "Unknown" ~ "Unknown",
+                      TRUE ~ "Negative"),
+                  HER2 = case_when(
+                      her2_status_by_ihc %in% c("Negative", "Positive") ~ her2_status_by_ihc,
+                      TRUE ~ "Unknown")) %>%
+        filter(grepl("^TCGA-", patient))
+}
+
 sys$run({
     args = sys$cmd$parse(
-        opt('o', 'outfile', 'rds', 'tcga-pan.rds')
+        opt('o', 'outfile', 'rds', 'tcga.rds')
     )
 
     incl = c("BRCA", "LUAD", "LUSC", "OV", "COAD", "SKCM")
@@ -54,6 +72,7 @@ sys$run({
         inner_join(meta) %>%
         left_join(aneup) %>%
         left_join(scores) %>%
+        left_join(brca_meta()) %>%
         select(-patient)
 
     saveRDS(dset, file=args$outfile)
