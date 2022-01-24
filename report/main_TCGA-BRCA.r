@@ -54,11 +54,11 @@ plot_surv = function(x) {
         pal = c("blue", "#ad07e3", "#ababab")
         lab = c("Ifn-driven", "IL6-driven", "Immune cold")
 
-        m1 = coxph(Surv(OS_years, OS) ~ age_days + estimate + qq, data=dx) %>% broom::tidy(); m1
-        m1p = coxph(Surv(OS_years, OS) ~ age_days + estimate + `E2F Targets` + qq, data=dx) %>% broom::tidy(); m1p
+        m1 = coxph(Surv(os_years, vital_status) ~ age_days + estimate + qq, data=dx) %>% broom::tidy(); m1
+        m1p = coxph(Surv(os_years, vital_status) ~ age_days + estimate + `E2F Targets` + qq, data=dx) %>% broom::tidy(); m1p
         p_il6 = . %>% filter(term=="qqil6") %>% pull(p.value)
 
-        fit = survfit(Surv(OS_years, OS) ~ qq, data=dx); surv_pvalue(fit)
+        fit = survfit(Surv(os_years, vital_status) ~ qq, data=dx); surv_pvalue(fit)
         dx %>% pull(qq) %>% table()
 
         ggsurvplot(fit, data=dx, pval=TRUE, xlim=c(0,5), break.time.by=2.5, palette=pal, legend.labs=lab)$plot +
@@ -77,18 +77,8 @@ plot_surv = function(x) {
 }
 
 sys$run({
-    brca = readRDS("../data/tcga-pan.rds") %>%
-        filter(cohort == "BRCA",
-               substr(Sample, 14,16) == "01A") %>%
-        mutate(patient = substr(Sample, 1, 12),
-               OS = as.integer(vital_status) - 1,
-               OS_years = os_days / 365,
-               OS = ifelse(OS_years>5, 0, OS),
-               OS_years = pmin(OS_years, 5)) %>%
-        left_join(readRDS("../data/brca-meta.rds")) %>%
-        select(Sample, estimate=purity, aneuploidy=aneup_log2seg, `ER/PR`, HER2,
-               OS, OS_years, age_days, CIN70_Carter2006, `E2F Targets`,
-               `Interferon Gamma Response`, `IL-6/JAK/STAT3 Signaling`)
+    brca = readRDS("../data/tcga.rds") %>%
+        filter(cohort == "BRCA")
 
     m1 = lm(`Interferon Gamma Response` ~ estimate, data=brca)
     brca$ifn_cor = brca$`Interferon Gamma Response` - predict(m1, newdata=data.frame(brca["estimate"]))

@@ -49,12 +49,14 @@ sys$run({
                       grepl("i", tumor_stage) ~ "i/ii",
                       TRUE ~ NA_character_),
                   age_days = age_at_diagnosis,
-                  vital_status = factor(vital_status, levels=c("alive", "dead")),
-                  os_days = pmax(0,
-                                 days_to_death,
-                                 days_to_last_known_disease_status,
-                                 days_to_last_follow_up,
-                                 na.rm=TRUE))
+                  vital_status = c(alive=0L, dead=1L)[vital_status],
+                  os_years = pmax(0,
+                                  days_to_death,
+                                  days_to_last_known_disease_status,
+                                  days_to_last_follow_up,
+                                  na.rm=TRUE) / 365,
+                  vital_status = ifelse(os_years > 5, 0L, vital_status),
+                  os_years = pmin(os_years, 5L))
 
     scores = c(lapply(incl, gex_tmm, genes=genes),
                lapply(incl, function(i) tcga$gsva(i, "MSigDB_Hallmark_2020")[hms,]),

@@ -18,16 +18,16 @@ scatter_with_correction = function(df, x, ys, cor, cor_value=1) {
     }
 
     comb = sapply(ys, df_one_y, simplify=FALSE) %>% dplyr::bind_rows(.id="gene") %>%
-        left_join(brca %>% select(Sample, HER2, ER_PR) %>% distinct())
+        left_join(brca %>% select(Sample, HER2, `ER/PR`) %>% distinct())
     comb$gene = factor(comb$gene, levels=ys)
 
     ggplot(comb, aes(x=!! rlang::sym(x), y=!! rlang::sym("expression"))) +
-        geom_point(aes(shape=factor(HER2), fill=factor(ER_PR)), alpha=0.1) +
+        geom_point(aes(shape=factor(HER2), fill=factor(`ER/PR`)), alpha=0.1) +
         geom_smooth(method="lm", se=FALSE) +
         ggpmisc::stat_fit_glance(method="lm", geom="text_npc", size=3.5, label.x=0.1,
                                  aes(label = paste0("p=", signif(..p.value.., digits = 2)))) +
-        scale_shape_manual(values=c(normal=21, amplified=24, unknown=22)) +
-        scale_fill_manual(values=c(negative="red", positive="blue", unknown="#ffffff00")) +
+        scale_shape_manual(values=c(Negative=21, Positive=24, Unknown=22)) +
+        scale_fill_manual(values=c(Negative="red", Positive="blue", Unknown="#ffffff00")) +
         guides(shape = guide_legend("HER2 status", override.aes = list(size=3, alpha=0.5)),
                fill = guide_legend("ER/PR status", override.aes = list(size=3, alpha=0.5, shape=21))) +
         theme_classic() +
@@ -36,17 +36,7 @@ scatter_with_correction = function(df, x, ys, cor, cor_value=1) {
 }
 
 sys$run({
-    brca = readRDS("../data/tcga-brca.rds") %>%
-        mutate(HER2 = case_when(
-            HER2 == 0 ~ "normal",
-            HER2 == 1 ~ "amplified",
-            TRUE ~ "unknown"
-        )) %>%
-        mutate(ER_PR = case_when(
-            ER_PR == 0 ~ "negative",
-            ER_PR == 1 ~ "positive",
-            TRUE ~ "unknown"
-        ))
+    brca = readRDS("../data/tcga.rds")
 
     p11 = scatter_with_correction(brca, "CGAS", c("aneuploidy", "CIN70_Carter2006"), "estimate") +
         ggtitle("CIN/Aneuploidy with CGAS")
