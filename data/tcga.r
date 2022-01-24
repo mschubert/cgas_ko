@@ -3,8 +3,8 @@ sys = import('sys')
 tcga = import('data/tcga')
 idmap = import('process/idmap')
 
-gex_tmm = function(cohort, genes) {
-    re = tcga$rna_seq(cohort, trans="tmm")[genes,]
+gex_vst = function(cohort, genes) {
+    re = tcga$rna_seq(cohort, trans="vst")[genes,]
     rownames(re) = names(genes)
     re
 }
@@ -58,7 +58,7 @@ sys$run({
                   vital_status = ifelse(os_years > 5, 0L, vital_status),
                   os_years = pmin(os_years, 5L))
 
-    scores = c(lapply(incl, gex_tmm, genes=genes),
+    scores = c(lapply(incl, gex_vst, genes=genes),
                lapply(incl, function(i) tcga$gsva(i, "MSigDB_Hallmark_2020")[hms,]),
                lapply(incl, function(i) tcga$gsva(i, "CIN")[CIN,,drop=FALSE])) %>%
         narray::stack(along=2) %>% t() %>%
