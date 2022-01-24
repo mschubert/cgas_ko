@@ -34,6 +34,6 @@ cmp = list(
 )
 volcs = wrap_plots(wt) / wrap_plots(cgas) / wrap_plots(cmp)
 
-pdf("supp_rnaseq.pdf", 14, 21)
+pdf("supp_rnaseq.pdf", 17, 21)
 print(volcs)
 dev.off()
