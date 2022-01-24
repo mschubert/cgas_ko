@@ -54,8 +54,8 @@ plot_surv = function(x) {
         pal = c("blue", "#ad07e3", "#ababab")
         lab = c("Ifn-driven", "IL6-driven", "Immune cold")
 
-        m1 = coxph(Surv(os_years, vital_status) ~ age_days + estimate + qq, data=dx) %>% broom::tidy(); m1
-        m1p = coxph(Surv(os_years, vital_status) ~ age_days + estimate + `E2F Targets` + qq, data=dx) %>% broom::tidy(); m1p
+        m1 = coxph(Surv(os_years, vital_status) ~ age_days + purity + qq, data=dx) %>% broom::tidy(); m1
+        m1p = coxph(Surv(os_years, vital_status) ~ age_days + purity + `E2F Targets` + qq, data=dx) %>% broom::tidy(); m1p
         p_il6 = . %>% filter(term=="qqil6") %>% pull(p.value)
 
         fit = survfit(Surv(os_years, vital_status) ~ qq, data=dx); surv_pvalue(fit)
@@ -80,10 +80,10 @@ sys$run({
     brca = readRDS("../data/tcga.rds") %>%
         filter(cohort == "BRCA")
 
-    m1 = lm(`Interferon Gamma Response` ~ estimate, data=brca)
-    brca$ifn_cor = brca$`Interferon Gamma Response` - predict(m1, newdata=data.frame(brca["estimate"]))
-    m2 = lm(`IL-6/JAK/STAT3 Signaling` ~ estimate, data=brca)
-    brca$il6_cor = brca$`IL-6/JAK/STAT3 Signaling` - predict(m2, newdata=data.frame(brca["estimate"]))
+    m1 = lm(`Interferon Gamma Response` ~ purity, data=brca)
+    brca$ifn_cor = brca$`Interferon Gamma Response` - predict(m1, newdata=data.frame(brca["purity"]))
+    m2 = lm(`IL-6/JAK/STAT3 Signaling` ~ purity, data=brca)
+    brca$il6_cor = brca$`IL-6/JAK/STAT3 Signaling` - predict(m2, newdata=data.frame(brca["purity"]))
 
     brca = brca %>%
         mutate(qq = case_when(

@@ -67,7 +67,7 @@ sys$run({
         as_tibble()
 
     aneup = tcga$aneuploidy() %>%
-       tcga$filter(along="Sample")
+        select(Sample, aneuploidy=aneup_log2seg)
 
     dset = pur %>%
         mutate(patient = substr(Sample, 1, 12)) %>%

@@ -13,7 +13,7 @@ scatter_with_correction = function(df, x, ys, cor, cor_value=1) {
 
         df %>%
             select(Sample, !!! rlang::syms(c(x, sample=y, cor, cancer="cor"))) %>%
-            tidyr::gather("type", "expression", -estimate, -rlang::sym(x), -Sample) %>%
+            tidyr::gather("type", "expression", -purity, -rlang::sym(x), -Sample) %>%
             mutate(type = factor(type, levels=c("sample", "cancer")))
     }
 
@@ -38,13 +38,13 @@ scatter_with_correction = function(df, x, ys, cor, cor_value=1) {
 sys$run({
     brca = readRDS("../data/tcga.rds")
 
-    p11 = scatter_with_correction(brca, "CGAS", c("aneuploidy", "CIN70_Carter2006"), "estimate") +
+    p11 = scatter_with_correction(brca, "CGAS", c("aneuploidy", "CIN70_Carter2006"), "purity") +
         ggtitle("CIN/Aneuploidy with CGAS")
-    p12 = scatter_with_correction(brca, "CGAS", c("IL6", "IL6R"), "estimate") +
+    p12 = scatter_with_correction(brca, "CGAS", c("IL6", "IL6R"), "purity") +
         ggtitle("IL6/IL6R with CGAS")
-    p21 = scatter_with_correction(brca, "Interferon Gamma Response", c("CGAS", "IL6", "IL6R"), "estimate") +
+    p21 = scatter_with_correction(brca, "Interferon Gamma Response", c("CGAS", "IL6", "IL6R"), "purity") +
         ggtitle("Interferon Reponse")
-    p22 = scatter_with_correction(brca, "IL-6/JAK/STAT3 Signaling", c("CGAS", "IL6", "IL6R"), "estimate") +
+    p22 = scatter_with_correction(brca, "IL-6/JAK/STAT3 Signaling", c("CGAS", "IL6", "IL6R"), "purity") +
         ggtitle("IL6-STAT3 axis")
 
     asm = ((p11 | p12) / (p21 | p22)) +
