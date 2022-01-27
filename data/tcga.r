@@ -32,7 +32,8 @@ sys$run({
         opt('o', 'outfile', 'rds', 'tcga.rds')
     )
 
-    incl = c("BRCA", "LUAD", "LUSC", "OV", "COAD", "SKCM")
+#    incl = c("BRCA", "LUAD", "LUSC", "OV", "COAD", "SKCM")
+    incl = c("BLCA", "BRCA", "COAD", "GBM", "HNSC", "KIRC", "LUAD", "LUSC", "OV", "SKCM", "READ", "UCEC")
     genes = c(IL6R="ENSG00000160712", IL6="ENSG00000136244", IL6ST="ENSG00000134352", CGAS="ENSG00000164430")
     hms = c("E2F Targets", "Interferon Gamma Response", "IL-6/JAK/STAT3 Signaling")
     CIN = c("CIN70_Carter2006")
