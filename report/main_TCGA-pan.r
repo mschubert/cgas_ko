@@ -34,7 +34,7 @@ dset_surv = left_join(pan, cors) %>%
 
 dset_expr = dset_surv %>%
     select(Sample, cohort, aneuploidy, CGAS, IL6, IL6R) %>%
-    filter(!is.na(aneuploidy), cohort != "BRCA") %>%
+    filter(!is.na(aneuploidy)) %>%
     tidyr::gather(field, value, -aneuploidy,  -Sample, -cohort) %>%
     group_by(field) %>%
         mutate(value = scale(value)) %>%
@@ -58,13 +58,14 @@ plot_cohort = function(.cohort, aneup_thresh=0.2) {
             coord_cartesian(ylim=c(-2.5,2.5)) +
             labs(fill="Gene")
 
-    p_il6 = function(x) {
-        re = x %>% filter(term=="il6_cor") %>% pull(p.value)
-        ifelse(re<0.05, sprintf("p=%.2g", re), "p=n.s.")
+    p_il6 = function(mod) {
+        re = broom::tidy(mod) %>% filter(term=="il6_cor") %>% pull(p.value)
+        p = ifelse(re<0.05, sprintf("%.2g", re), "n.s.")
+        sprintf("n=%i\np=%s", mod$n, p)
     }
 
     dca = dc %>% filter(aneuploidy > aneup_thresh)
-    m1 = coxph(Surv(os_years, vital_status) ~ age_days + purity + il6_cor, data=dca) %>% broom::tidy()
+    m1 = coxph(Surv(os_years, vital_status) ~ age_days + purity + il6_cor, data=dca)
     fit = survfit(Surv(os_years, vital_status) ~ il6_cor2, data=dca)
     surv1 = ggsurvplot(fit, data=dca, xlim=c(0,5), break.time.by=5, censor.size=3,
                        legend.title="IL6 (cancer)", legend.labs=c("low","high"))
@@ -73,7 +74,7 @@ plot_cohort = function(.cohort, aneup_thresh=0.2) {
               annotate("text_npc", npcx=0.1, npcy=0.1, label=p_il6(m1)))
 
     dce = dc %>% filter(aneuploidy < aneup_thresh)
-    m2 = coxph(Surv(os_years, vital_status) ~ age_days + purity + il6_cor, data=dce) %>% broom::tidy()
+    m2 = coxph(Surv(os_years, vital_status) ~ age_days + purity + il6_cor, data=dce)
     fit = survfit(Surv(os_years, vital_status) ~ il6_cor2, data=dce)
     surv2 = ggsurvplot(fit, data=dce, xlim=c(0,5), break.time.by=5, censor.size=3,
                        legend.title="IL6 (cancer)", legend.labs=c("low","high"))
